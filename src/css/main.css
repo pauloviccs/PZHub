@@ -223,6 +223,49 @@ body {
   font-weight: bold;
 }
 
+.stat-dot.red {
+  background: #e74c3c;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.8);
+}
+
+.stat-dot.amber {
+  background: var(--accent-amber);
+  box-shadow: 0 0 6px var(--accent-amber);
+}
+
+/* Tarkov Stat Item - Updater Discrete Indicator */
+.tarkov-stat-item.updater-stat-item {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.tarkov-stat-item.updater-stat-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tarkov-stat-item.updater-stat-item.has-error {
+  border-color: rgba(231, 76, 60, 0.5);
+  background: rgba(231, 76, 60, 0.12);
+}
+
+.tarkov-stat-item.updater-stat-item.has-error .stat-val {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+.tarkov-stat-item.updater-stat-item.has-update {
+  border-color: rgba(46, 204, 113, 0.6);
+  background: rgba(46, 204, 113, 0.15);
+  animation: pulse-emerald 2.5s infinite ease-in-out;
+}
+
+.tarkov-stat-item.updater-stat-item.has-update .stat-val {
+  color: var(--accent-emerald);
+  font-weight: 700;
+}
+
 /* ==========================================================================
    VIEWPORT & VIEW CONTAINERS
    ========================================================================== */
@@ -4734,6 +4777,374 @@ body.theme-light .tarkov-progress-bar-bg {
   font-size: 11px;
   line-height: 1.5;
 }
+
+/* ==========================================================================
+   TACTICAL TOAST & NOTIFICATION SYSTEM (TARKOV SOFT GLASS)
+   ========================================================================== */
+.tactical-toast-container {
+  position: fixed;
+  top: 54px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 380px;
+  width: 100%;
+}
+
+.tactical-toast {
+  position: relative;
+  background: rgba(13, 18, 24, 0.96);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--accent-amber);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(30px) scale(0.96);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.tactical-toast.active {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.tactical-toast.dismissing {
+  opacity: 0;
+  transform: translateX(40px) scale(0.92);
+  transition: all 0.25s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.tactical-toast.toast-success {
+  border-left-color: var(--accent-emerald);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(46, 204, 113, 0.15);
+}
+
+.tactical-toast.toast-error {
+  border-left-color: var(--accent-red);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(231, 76, 60, 0.2);
+}
+
+.tactical-toast.toast-warning {
+  border-left-color: var(--accent-amber);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(229, 142, 38, 0.2);
+}
+
+.tactical-toast.toast-info {
+  border-left-color: var(--accent-cyan);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 210, 211, 0.15);
+}
+
+.toast-content-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.toast-icon-box {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-icon-box svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toast-success .toast-icon-box svg { fill: var(--accent-emerald); }
+.toast-error .toast-icon-box svg { fill: var(--accent-red); }
+.toast-warning .toast-icon-box svg { fill: var(--accent-amber); }
+.toast-info .toast-icon-box svg { fill: var(--accent-cyan); }
+
+.toast-text-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.toast-msg {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.toast-action-btn {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toast-action-btn:hover {
+  background: var(--accent-amber);
+  border-color: var(--accent-amber);
+  color: #000;
+}
+
+.toast-close-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.toast-close-btn:hover {
+  color: #fff;
+}
+
+.toast-timer-bar {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.toast-timer-progress {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.toast-success .toast-timer-progress { background: var(--accent-emerald); }
+.toast-error .toast-timer-progress { background: var(--accent-red); }
+.toast-warning .toast-timer-progress { background: var(--accent-amber); }
+.toast-info .toast-timer-progress { background: var(--accent-cyan); }
+
+/* ==========================================================================
+   TACTICAL VERSION & UPDATE MODAL (TARKOV POP-UP)
+   ========================================================================== */
+.version-modal-card {
+  background: rgba(13, 18, 24, 0.98);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.version-modal-header {
+  padding: 14px 18px;
+  background: rgba(8, 12, 16, 0.95);
+  border-bottom: 1px solid var(--panel-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--accent-amber);
+}
+
+.version-modal-body {
+  padding: 24px 22px;
+  text-align: center;
+}
+
+.version-hero-icon-container {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(circle, rgba(46, 204, 113, 0.15) 0%, transparent 70%);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  box-shadow: 0 0 25px rgba(46, 204, 113, 0.2);
+}
+
+.version-hero-icon-container.is-error {
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.15) 0%, transparent 70%);
+  border-color: rgba(231, 76, 60, 0.4);
+  box-shadow: 0 0 25px rgba(231, 76, 60, 0.2);
+}
+
+.version-hero-icon-container.is-checking {
+  background: radial-gradient(circle, rgba(0, 210, 211, 0.15) 0%, transparent 70%);
+  border-color: rgba(0, 210, 211, 0.4);
+  box-shadow: 0 0 25px rgba(0, 210, 211, 0.2);
+}
+
+.version-hero-icon-container svg {
+  width: 32px;
+  height: 32px;
+}
+
+.version-headline {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.version-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin: 0 auto 20px;
+  line-height: 1.5;
+}
+
+.version-info-grid {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.version-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.version-info-row .info-label {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.version-info-row .info-value {
+  font-weight: 700;
+}
+
+.version-error-box {
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.error-box-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  color: #ff6b81;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.error-box-content {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #fca5a5;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.version-modal-footer {
+  padding: 14px 18px;
+  background: rgba(8, 12, 16, 0.95);
+  border-top: 1px solid var(--panel-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   HUB METRIC UPDATER & ROTATING ANIMATIONS
+   ========================================================================== */
+.metric-box-updater {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.metric-box-updater:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.btn-check-updates-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  color: var(--accent-emerald);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-check-updates-pill:hover {
+  background: var(--accent-emerald);
+  color: #000;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+}
+
+.btn-check-updates-pill.is-checking {
+  pointer-events: none;
+  opacity: 0.8;
+  background: rgba(0, 210, 211, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.icon-spin-animated {
+  animation: spinSmooth 1s infinite linear;
+}
+
+@keyframes spinSmooth {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 
 
 

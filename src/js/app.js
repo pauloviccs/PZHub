@@ -11,7 +11,7 @@ import { KNOX_TOWNS } from './pz_projection.js';
 import { initLocalModsScanner, refreshLocalMods, getLocalModsList } from './local_mods_scanner.js';
 import { initModpackManager, setCategoryFilter, getAvailableModpacks, executeModpackInstallation } from './modpack_manager.js';
 import { i18n, PZ_CATEGORIES } from './i18n.js';
-import { checkForAppUpdates } from './updater.js';
+import { checkForAppUpdates, getLastUpdateCheck, updateTopbarIndicator } from './updater.js';
 import { initLauncher } from './launcher.js';
 import { initAuth } from './auth.js';
 
@@ -122,13 +122,23 @@ class App {
   }
 
   setupAppUpdater() {
+    // Restaura indicador da última checagem se houver registro prévio em localStorage
+    const lastCheck = getLastUpdateCheck();
+    if (lastCheck && lastCheck.success === false && lastCheck.error) {
+      updateTopbarIndicator({
+        status: 'error',
+        error: lastCheck.error,
+        manifestUrl: lastCheck.url
+      });
+    }
+
     // Verificação automática silenciosa após 2.5s da inicialização
     setTimeout(() => {
       checkForAppUpdates();
     }, 2500);
 
-    // Permite ao operador clicar no status do sistema na Topbar para forçar checagem
-    const statusItem = document.querySelector('.nav-system-section .tarkov-stat-item');
+    // Permite ao operador clicar no status do sistema na Topbar para forçar checagem manual
+    const statusItem = document.getElementById('global-system-status') || document.querySelector('.nav-system-section .tarkov-stat-item');
     if (statusItem) {
       statusItem.style.cursor = 'pointer';
       statusItem.setAttribute('title', 'Clique para verificar atualizações do PZHub');

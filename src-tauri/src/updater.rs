@@ -48,32 +48,70 @@ fn normalize_installer_url(url: &str) -> String {
     clean
 }
 
+/// Normaliza URLs de manifestos de atualização para links diretos (RAW)
+pub fn normalize_manifest_url(url: &str) -> String {
+    let mut clean = url.trim().to_string();
+
+    // GitHub: Converte link de visualização web do GitHub (blob) para raw.githubusercontent.com
+    if clean.contains("github.com/") && clean.contains("/blob/") {
+        clean = clean
+            .replace("github.com/", "raw.githubusercontent.com/")
+            .replace("/blob/", "/");
+    }
+
+    // Pastebin: Suporte a fallback secundário para links normais do Pastebin
+    if clean.contains("pastebin.com/") && !clean.contains("pastebin.com/raw/") {
+        clean = clean.replace("pastebin.com/", "pastebin.com/raw/");
+    }
+
+    clean
+}
+
 #[tauri::command]
 pub async fn fetch_update_manifest(manifest_url: String) -> Result<serde_json::Value, String> {
-    let mut clean_url = manifest_url.trim().to_string();
-    if clean_url.contains("pastebin.com/") && !clean_url.contains("pastebin.com/raw/") {
-        clean_url = clean_url.replace("pastebin.com/", "pastebin.com/raw/");
-    }
+    let clean_url = normalize_manifest_url(&manifest_url);
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
-        .user_agent("PZHub-Desktop-Updater/2.0")
+        .user_agent("PZHub-Desktop-Updater/2.1")
         .redirect(reqwest::redirect::Policy::limited(10))
         .build()
-        .map_err(|e| format!("Falha ao inicializar cliente HTTP: {}", e))?;
+        .map_err(|e| format!("Falha ao inicializar cliente HTTP nativo: {}", e))?;
 
     let res = client.get(&clean_url)
         .send()
         .await
-        .map_err(|e| format!("Falha ao conectar no manifesto: {}", e))?;
+        .map_err(|e| format!("Falha ao conectar no manifesto remoto ({}): {}", clean_url, e))?;
 
-    if !res.status().is_success() {
-        return Err(format!("Servidor retornou status HTTP: {}", res.status()));
+    let status = res.status();
+    if !status.is_success() {
+        let code = status.as_u16();
+        let reason = status.canonical_reason().unwrap_or("Erro desconhecido");
+        return Err(format!(
+            "Servidor de atualizações retornou erro HTTP {} ({}) ao consultar: {}",
+            code, reason, clean_url
+        ));
     }
 
-    let text = res.text().await.map_err(|e| format!("Falha ao ler dados: {}", e))?;
+    let text = res.text().await
+        .map_err(|e| format!("Falha ao ler dados retornados pelo servidor de atualizações: {}", e))?;
+
+    if text.trim().is_empty() {
+        return Err(format!("O servidor retornou uma resposta vazia ao consultar: {}", clean_url));
+    }
+
     let json: serde_json::Value = serde_json::from_str(&text)
-        .map_err(|e| format!("Estrutura JSON inválida: {}", e))?;
+        .map_err(|e| {
+            let snippet: String = text.chars().take(120).collect();
+            format!(
+                "O manifesto retornado não é um JSON válido: {} (Início da resposta: '{}')",
+                e, snippet.replace('\n', " ").replace('\r', "")
+            )
+        })?;
+
+    if json.get("version").and_then(|v| v.as_str()).is_none() {
+        return Err("Manifesto de atualização inválido: campo 'version' obrigatório não encontrado no JSON.".to_string());
+    }
 
     Ok(json)
 }

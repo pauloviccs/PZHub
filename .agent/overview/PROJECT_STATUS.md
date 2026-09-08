@@ -4,7 +4,7 @@
 PZHub Desktop (Tactical Live Radar, Modpack Manager & Operations Suite)
 
 ## Description
-Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet**, projetada como a central de operações e inteligência tática definitiva para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O sistema integra motor de mapa isométrico 1:1 de Knox County, live radar e telemetria ao vivo com transmissão Lua local, navegação GPS A* por malha viária oficial de 1.098 ruas, gerenciador e instalador de modpacks com suporte à Steam Workshop (`steam://`) e downloads diretos `.zip`, scanner assíncrono de mods locais (com alternância entre Grade e Lista tática), autenticação integrada com o Supabase (mesma conta do PZHub Website), **painel de amigos e esquadrão estilo Riot Client** com sincronização de avatares/apelidos em tempo real e **presença global entre usuários do desktop** via Supabase Realtime Channels, além de um botão hero de lançamento do jogo na Steam com seletor de alocação de memória RAM.
+Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet**, projetada como a central de operações e inteligência tática definitiva para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O sistema integra motor de mapa isométrico 1:1 de Knox County com cache em disco em Rust, live radar e telemetria ao vivo com transmissão Lua local, navegação GPS A* por malha viária oficial de 1.098 ruas, gerenciador e instalador de modpacks com suporte à Steam Workshop (`steam://`) e downloads diretos `.zip`, scanner assíncrono de mods locais (com alternância entre Grade ⊞ e Lista ☰), autenticação integrada com o Supabase (mesma conta do PZHub Website), **painel de amigos e esquadrão estilo Riot Client** com sincronização de avatares/apelidos em tempo real e **presença global entre usuários do desktop** via Supabase Realtime Channels, **carrossel dinâmico de modpacks comunitários em destaque no Hub**, além de um botão hero de lançamento do jogo na Steam com injeção de parâmetros de memória RAM no `ProjectZomboid64.json`.
 
 ## Tech Stack
 - **Languages:** Rust 1.94+ (Edition 2021), JavaScript (ES2023 Modules), Lua 5.1/JIT (PZ Modding API), HTML5, CSS3, SQL (PostgreSQL DDL/RLS)
@@ -17,13 +17,16 @@ Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **
 VICCS_PZHub/ (Desktop App Workspace Root)
 ├── .agent/                                  # Cortex de Memória e Contexto do Agente
 │   ├── assets/                              # Brand assets (Logos SVG, ícones e referências)
+│   │   ├── icons/                           # Ícones e assets gráficos auxiliares
+│   │   └── ui_reference/                    # Screenshots e referências de interface
 │   ├── context/                             # Diretrizes de arquitetura, banco e stack
 │   │   ├── architecture.md                  # Arquitetura do ecossistema Desktop + Web
 │   │   ├── database_schema.md               # Schema Supabase e políticas RLS
 │   │   └── stack.md                         # Especificação técnica da stack
 │   ├── guidelines/                          # Diretrizes de desenvolvimento
 │   │   ├── code_style.md                    # Padrões de código JavaScript/Rust
-│   │   └── ui_ux.md                         # Diretrizes Tarkov e Tactical Apple
+│   │   └── ui_ux.md                         # Diretrizes Tarkov, Riot Client e Tactical Apple
+│   ├── logs/                                # Registros e logs de execução de servidores/consoles
 │   ├── memory/                              # Memória viva do projeto
 │   │   ├── active_task.md                   # Tarefa ativa e entregas imediatas
 │   │   ├── changelog.md                     # Histórico versionado de releases
@@ -39,7 +42,7 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   ├── poster.png                           # Arte de exibição do mod
 │   └── README.md                            # Guia de instalação manual do mod
 ├── src/                                     # Frontend Desktop (Vanilla JS + Leaflet)
-│   ├── assets/                              # Ícones e logotipos vetoriais do app
+│   ├── assets/                              # Ícones, logotipos vetoriais e ilustrações SVG
 │   ├── css/
 │   │   ├── main.css                         # Design System Escape from Tarkov, Riot Client e Tactical White Mode
 │   │   └── map.css                          # Estilos táticos de Radar, HUD, camadas e Leaflet
@@ -50,7 +53,7 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   ├── worldmap_forest.json             # Vetores de áreas de mata e floresta
 │   │   └── worldmap_water.json              # Vetores de rios e massas d'água
 │   ├── js/
-│   │   ├── app.js                           # Controlador principal, router de views e showcase
+│   │   ├── app.js                           # Controlador principal, router de views e showcase carousel
 │   │   ├── auth.js                          # Autenticação e perfis sincronizados com Supabase Auth
 │   │   ├── friends_manager.js               # Painel social estilo Riot Client, busca e presença Realtime
 │   │   ├── gps_router.js                    # A* Pathfinding viário e cálculo de distâncias
@@ -78,12 +81,14 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   ├── src/
 │   │   ├── cache.rs                         # Cache local assíncrono de tiles em disco
 │   │   ├── config.rs                        # Configurações do usuário, amigos e persistência JSON
-│   │   ├── lib.rs                           # Comandos invocáveis Tauri e inicialização de plugins
+│   │   ├── launcher.rs                      # Configuração de JVM/RAM em ProjectZomboid64.json e disparo Steam
+│   │   ├── lib.rs                           # Registro dos 26 comandos nativos e inicialização de plugins
 │   │   ├── main.rs                          # Entry point do executável Windows
 │   │   ├── mod_installer.rs                 # Instalador automatizado do mod Lua no Zomboid
 │   │   ├── mod_manager.rs                   # Varredura do filesystem, unzip assíncrono e Steam
 │   │   ├── tracker.rs                       # Leitura segura de telemetria local e estado offline
-│   │   └── updater.rs                       # Downloader nativo em streaming de instaladores
+│   │   └── updater.rs                       # Downloader nativo em streaming de instaladores NSIS
+│   ├── target/release/bundle/               # Pacotes de distribuição gerados (v2.1.1 setup .exe e v2.0.0 .msi)
 │   ├── Cargo.toml                           # Dependências e manifesto Rust
 │   └── tauri.conf.json                      # Configuração de janelas, permissões e empacotamento NSIS/MSI
 ├── download_data.js                         # Utilitário para download de mapas e vetores oficiais
@@ -92,13 +97,15 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 ```
 
 ## Key Files
-- `src-tauri/src/lib.rs`: Registra todos os 21 comandos nativos expostos ao frontend (cache de tiles, telemetria, janelas, scanner, modpacks e updater).
+- `src-tauri/src/lib.rs`: Registra todos os 26 comandos nativos expostos ao frontend (cache de tiles, telemetria, janelas, scanner, modpacks, launcher de RAM e updater).
+- `src-tauri/src/launcher.rs`: Localiza as pastas de instalação do Project Zomboid no Windows, injeta a configuração de memória RAM (`-Xmx` e `-Xms`) diretamente no `ProjectZomboid64.json` e dispara a inicialização do jogo via Steam (`steam://run/108600`) com fallback para o executável nativo.
+- `src/js/launcher.js`: Gerenciador frontend do botão hero "JOGAR" no cabeçalho superior e menu dropdown tático para seleção de memória RAM (4GB a 32GB) com persistência em `localStorage`.
 - `src/js/auth.js`: Autenticação completa via Supabase, gestão de sessão persistente, perfil de operador (`profiles`), menu de contexto de perfil e sincronização biunívoca com a barra superior e a barra lateral.
 - `src/js/friends_manager.js`: Gerenciador social estilo Riot Client com pesquisa rápida, gaveta retrátil de novo sobrevivente com swatches de cores táticas, agrupamento dinâmico (Online / Offline com accordion), sincronização de avatares via tabela `profiles` e presença em tempo real via canal WebSocket `pzhub-global-presence`.
-- `src/js/launcher.js`: Lançador Steam nativo com botão predominante "JOGAR" e menu tático para alocação de memória RAM (4GB a 32GB) com injeção de parâmetros JVM.
 - `src/js/map_engine.js`: Motor Leaflet com projeção customizada do Project Zomboid, suporte a andares (Z-Levels 0-7), GPS viário integrado e marcadores de telemetria.
 - `src/js/squad_tracker.js`: Rastreamento de jogadores locais e remotos via leitura de arquivo Lua, disparando notificações de atualização (`onSquadUpdate`) para o painel social.
 - `src/js/modpack_manager.js`: Gerenciador de modpacks com suporte à alternância de visualização Grade ⊞ vs Lista ☰, renderização de Markdown, consulta assíncrona de changelogs/comentários ao Supabase e modal tático de detalhes.
+- `src/js/local_mods_scanner.js`: Scanner assíncrono de mods em `%USERPROFILE%/Zomboid/mods` e Steam Workshop (`108600`), com filtros por tipo, pesquisa em tempo real, visualização em Grade ⊞ e Lista ☰ e atalho para abrir pastas no Windows Explorer.
 - `src-tauri/src/updater.rs`: Motor de download em streaming via `reqwest` com emissão contínua de eventos de progresso e inicialização atômica de instaladores NSIS.
 
 ## Current Features Implemented
@@ -107,9 +114,10 @@ VICCS_PZHub/ (Desktop App Workspace Root)
    - Sincronização em tempo real de avatar, nome de exibição (`display_name`), papéis (`ADMIN`, `MOD`, `CRIADOR`, `OPERADOR`) e persistência segura em `localStorage`.
    - Espelhamento instantâneo do avatar e nickname tanto no cabeçalho superior direito (`#user-operator-card`) quanto no card do operador da barra lateral da Página 4 (`.riot-user-card`).
 
-2. **Hero Play Button & Seletor de Memória RAM na Steam:**
+2. **Hero Play Button & Injeção de Memória RAM no Project Zomboid:**
    - Botão de lançamento primário em verde esmeralda com destaque visual predominante no cabeçalho superior.
-   - Menu dropdown tático integrado para alocação de memória RAM na inicialização (4GB, 6GB, 8GB, 12GB, 16GB, 24GB, 32GB), memorizando a última preferência do jogador e disparando a Steam via protocolo nativo.
+   - Menu dropdown tático integrado para alocação de memória RAM na inicialização (4GB, 6GB, 8GB, 12GB, 16GB, 24GB, 32GB), memorizando a última preferência do jogador.
+   - Injeção atômica dos parâmetros JVM `-Xmx` e `-Xms` no arquivo `ProjectZomboid64.json` pelo backend Rust antes de disparar o protocolo Steam (`steam://run/108600`).
 
 3. **Painel Social & Lista de Amigos Estilo Riot Client:**
    - **Card de Perfil do Operador:** Avatar circular, status neon verde online, nome do operador e botão de ação rápida `+` para abrir a gaveta de novos contatos.
@@ -126,28 +134,32 @@ VICCS_PZHub/ (Desktop App Workspace Root)
    - Se um amigo abrir o aplicativo desktop, seu status é promovido instantaneamente para `🟢 ONLINE NO PZHUB DESKTOP` para todos os outros usuários logados.
    - Caso os jogadores entrem no mesmo servidor do Project Zomboid, o rastreador de telemetria do jogo assume automaticamente com coordenadas e rotas GPS.
 
-5. **Responsividade Blindada & Isolamento de Abas na Página 4 (Radar Tático):**
+5. **Showcase Carousel Comunitário no Hub:**
+   - Carrossel dinâmico na Página 1 (Centro de Operações) exibindo modpacks em destaque da comunidade.
+   - Transição suave entre slides, controles manuais de navegação (`‹` e `›`), indicadores de paginação em dots e botão de ação imediata para instalação e subscrição.
+
+6. **Responsividade Blindada & Isolamento de Abas na Página 4 (Radar Tático):**
    - `.tactical-header` travado em `44px` com `flex-wrap: nowrap !important;` e `overflow: hidden;`, eliminando qualquer sobreposição ou quebra de linha em monitores verticais ou widescreen.
    - `.tactical-sidebar` posicionada em `top: 58px; left: 8px; bottom: 12px; width: 330px;`, criando folga de 6px abaixo do header.
    - `.tactical-dock` centralizado no espaço útil do mapa com ancoragem adaptativa à direita em telas menores.
    - Isolamento rígido de abas (`.tab-pane` com `display: none !important;`) eliminando vazamentos de conteúdo ou lacunas vazias entre Cidades, Loot, Andar e Config.
 
-6. **Motor de Mapa Tático 1:1 Knox County & Live Radar:**
-   - Projeção de coordenadas Project Zomboid com suporte a andares (Z-Levels 0 a 7) e cache local de tiles em Rust.
+7. **Motor de Mapa Tático 1:1 Knox County & Live Radar:**
+   - Projeção de coordenadas Project Zomboid com suporte a andares (Z-Levels 0 a 7) e cache local de tiles em disco gerenciado pelo Rust.
    - Navegação GPS viária com algoritmo A* por malha de 1.098 ruas, bússola cardeal e HUD superior com ETA.
    - Modo Mini-Radar estilo GTA V ($340\times220\text{px}$) frameless, always-on-top.
 
-7. **Gerenciador de Modpacks & Scanner Local:**
+8. **Gerenciador de Modpacks & Scanner Local:**
    - Catálogo de modpacks integrado ao Supabase com alternância entre Grade ⊞ e Lista ☰.
    - Scanner assíncrono de mods locais em `%USERPROFILE%/Zomboid/mods` e Steam Workshop (`108600`).
    - Modal tático de detalhes com Markdown renderizado, changelogs e comentários.
 
-8. **Auto-Updater Nativo (Windows NSIS):**
+9. **Auto-Updater Nativo (Windows NSIS):**
    - Consulta SemVer a manifestos remotos, modal tático de notas de atualização e streaming de download em Rust com substituição atômica de executáveis.
 
-9. **Binários de Distribuição Compilados (v2.0.0):**
-   - `src-tauri/target/release/bundle/nsis/PZHub_2.0.0_x64-setup.exe`
-   - `src-tauri/target/release/bundle/msi/PZHub_2.0.0_x64_en-US.msi`
+10. **Binários de Distribuição Compilados:**
+    - `src-tauri/target/release/bundle/nsis/PZHub_2.1.1_x64-setup.exe` (Instalador NSIS v2.1.1)
+    - `src-tauri/target/release/bundle/msi/PZHub_2.0.0_x64_en-US.msi` (Instalador MSI v2.0.0)
 
 ## Work-in-Progress Items
 - Transmissão de waypoints e marcações táticas personalizadas no mapa entre amigos online via canal Realtime.

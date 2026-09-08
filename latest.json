@@ -1,0 +1,8 @@
+{
+  "version": "2.1.1",
+  "name": "PZHub Tactical Operations Suite v2.1.1",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/v2.1.1/PZHub_2.1.1_x64-setup.exe",
+  "notes": "### PZHub Tactical Operations Suite v2.1.1\n\n- **Auto-Updater Robusto:** Migração do manifesto oficial para o GitHub Raw (`latest.json`) com diagnóstico de erros em tempo real.\n- **Indicador Tático na Topbar:** Alerta discreto e não-bloqueante na barra superior quando a checagem de atualização falha, com detalhamento do erro.\n- **Painel Social Riot Client:** Sincronização em tempo real de presença global com Supabase.\n- **Steam Launcher com RAM:** Alocação de memória JVM diretamente no `ProjectZomboid64.json`.\n- **Blindagem de Layout:** Header travado em 44px e isolamento de abas na Página 4.",
+  "pub_date": "2026-09-08T03:30:00Z",
+  "mandatory": false
+}

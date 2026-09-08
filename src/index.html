@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PZHub - Tactical Live Radar & Modpack Manager</title>
+
+    <!-- Favicons Oficiais PZHub -->
+    <link rel="icon" type="image/svg+xml" href="./assets/logo/PZHub_LogoIcon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/logo/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/logo/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="./assets/logo/apple-touch-icon.png" />
+    <link rel="shortcut icon" href="./assets/logo/favicon.ico" />
+
+    <!-- Leaflet Assets (100% Local) -->
+    <link rel="stylesheet" href="./lib/leaflet/leaflet.css" />
+
+    <!-- Tactical Design System & Map Styles (Escape from Tarkov UI Overhaul) -->
+    <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/map.css" />
+
+    <!-- Supabase Client UMD & Leaflet Assets (100% Local) -->
+    <script src="./lib/supabase/supabase.js"></script>
+    <script src="./lib/leaflet/leaflet.js" defer></script>
+    <script type="module" src="./js/app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- ULTRA-LIGHTWEIGHT GPU-ACCELERATED SPLASH SCREEN / INTRO -->
+    <div id="pzhub-splash-intro" class="pzhub-splash-screen">
+      <div class="splash-backdrop-radial"></div>
+      <div class="splash-content">
+        <div class="splash-logo-container">
+          <img src="./assets/logo/PZHUB_Logo_svg_Red_White.svg" alt="PZHub Tactical Logo" class="splash-logo-img" style="width: 220px; height: auto;" />
+          <div class="splash-glow-ring"></div>
+        </div>
+        <div class="splash-status-text">
+          <span class="splash-tag">TACTICAL OPERATIONS SUITE // B42 & B41</span>
+          <div class="splash-loader-bar">
+            <div class="splash-loader-fill"></div>
+          </div>
+          <span class="splash-sub-status">INICIALIZANDO SUBSISTEMAS TÁTICOS...</span>
+        </div>
+      </div>
+    </div>
+    <div id="app">
+      <!-- GLOBAL TOP NAVIGATION BAR (SLIM 42PX TACTICAL LIQUID GLASS) -->
+      <header id="global-navbar" class="tarkov-top-bar">
+        <!-- 1. ZONA ESQUERDA: BRANDING + STEAM PLAY LAUNCHER -->
+        <div class="nav-left-cluster">
+          <div class="nav-brand-section" id="nav-brand-btn" title="PZHub Tactical Suite">
+            <img src="./assets/logo/PZHub_LogoIcon.svg" class="tarkov-brand-logo" alt="PZHub Logo" />
+            <div class="tarkov-brand-text">
+              <span class="brand-name">PZHUB</span>
+              <span class="brand-sub">B42</span>
+            </div>
+          </div>
+
+          <!-- TACTICAL STEAM LAUNCHER WIDGET (HERO ACTION) -->
+          <div class="tactical-play-widget hero-play-widget" id="tactical-play-widget">
+            <button id="btn-play-game" class="btn-steam-play hero-steam-play" title="Iniciar Project Zomboid via Steam">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span class="play-text">JOGAR</span>
+            </button>
+
+            <div class="ram-selector-dropdown">
+              <button id="btn-ram-select-trigger" class="btn-ram-trigger hero-ram-trigger" title="Alocação de Memória RAM na Inicialização">
+                <span class="ram-chip-tag"><span id="selected-ram-label">8 GB</span></span>
+                <svg class="chevron-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+              </button>
+
+              <div id="ram-options-menu" class="tarkov-dropdown-menu">
+                <div class="dropdown-header">MEMÓRIA RAM (JVM)</div>
+                <button class="ram-option" data-ram="4">4 GB <span>(Padrão Vanilla)</span></button>
+                <button class="ram-option" data-ram="6">6 GB <span>(Mods Leves)</span></button>
+                <button class="ram-option active" data-ram="8">8 GB <span>(Recomendado)</span></button>
+                <button class="ram-option" data-ram="12">12 GB <span>(Modpacks Pesados)</span></button>
+                <button class="ram-option" data-ram="16">16 GB <span>(Extremo / Servidor)</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. ZONA CENTRAL: ABAS DE NAVEGAÇÃO RESPONSIVAS -->
+        <nav class="tarkov-nav-tabs">
+          <button class="tarkov-tab active" data-view="view-hub" title="Centro de Operações">
+            <span class="tab-index">01</span>
+            <span class="tab-label" data-i18n="tab_hub">CENTRO DE OPERAÇÕES</span>
+            <span class="tab-label-short">HUB</span>
+          </button>
+          <button class="tarkov-tab" data-view="view-modpacks" title="Gerenciador de Modpacks">
+            <span class="tab-index">02</span>
+            <span class="tab-label" data-i18n="tab_modpacks">MODPACKS</span>
+            <span class="tab-label-short">PACKS</span>
+          </button>
+          <button class="tarkov-tab" data-view="view-local-mods" title="Mods Locais Instalados">
+            <span class="tab-index">03</span>
+            <span class="tab-label" data-i18n="tab_local_mods">MODS LOCAIS</span>
+            <span class="tab-label-short">MODS</span>
+          </button>
+          <button class="tarkov-tab highlight-tab" data-view="view-map" title="Mapa & Radar Tático">
+            <span class="tab-index">04</span>
+            <span class="tab-label" data-i18n="tab_map">MAPA & RADAR</span>
+            <span class="tab-label-short">RADAR</span>
+          </button>
+        </nav>
+
+        <!-- 3. ZONA DIREITA: PERFIL SUPABASE + CONTROLES DE SISTEMA -->
+        <div class="nav-system-section">
+          <!-- Bloco de Autenticação / Perfil de Operador Supabase -->
+          <div id="nav-user-profile-slot" class="user-profile-slot">
+            <button id="btn-open-auth-modal" class="tarkov-btn-auth" title="Entrar com sua conta PZHub">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <span class="auth-btn-label">ENTRAR</span>
+            </button>
+
+            <div id="user-operator-card" class="operator-badge-container hidden" title="Perfil de Operador">
+              <img id="user-avatar-img" class="operator-avatar" src="./assets/logo/PZHub_LogoIcon.svg" alt="Avatar" />
+              <div class="operator-info">
+                <span id="user-username-display" class="operator-name">Operador</span>
+                <span class="operator-status-tag">ONLINE</span>
+              </div>
+              <svg class="chevron-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+
+              <!-- Dropdown de Contexto do Usuário -->
+              <div id="user-context-menu" class="tarkov-dropdown-menu user-menu-dropdown">
+                <div class="dropdown-header">CONTA SINCRONIZADA</div>
+                <div class="dropdown-item sync-info">
+                  <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                  <span>Nuvem Supabase Ativa</span>
+                </div>
+                <div class="dropdown-divider"></div>
+                <button id="menu-opt-logout" class="dropdown-item item-danger">
+                  <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                  <span>Encerrar Sessão</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-divider"></div>
+
+          <!-- Language Selector -->
+          <div class="lang-selector-group">
+            <button class="lang-btn-option active" data-lang="pt" title="Português (Brasil)">PT</button>
+            <button class="lang-btn-option" data-lang="en" title="English (US)">EN</button>
+            <button class="lang-btn-option" data-lang="es" title="Español (ES)">ES</button>
+          </div>
+
+          <!-- White / Light Mode Toggle -->
+          <button id="btn-global-theme-toggle" class="tarkov-btn-icon" title="Alternar Modo Claro / Escuro">
+            <span id="desktop-theme-icon">☀️</span>
+          </button>
+
+          <div class="tarkov-stat-item" title="Status dos Subsistemas">
+            <span class="stat-dot green"></span>
+            <span class="stat-val" id="global-status-val">PRONTO</span>
+          </div>
+          <button id="btn-global-always-on-top" class="tarkov-btn-icon" title="Fixar sempre no topo" data-i18n-title="pin_window_title">
+            <svg viewBox="0 0 24 24"><path d="M16 9V4l1 0c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1l1 0v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- MAIN VIEWS CONTAINER -->
+      <main id="main-content-viewport">
+        <!-- =================================================== -->
+        <!-- VIEW 1: CENTRO DE OPERAÇÕES (HUB / DASHBOARD)       -->
+        <!-- =================================================== -->
+        <section id="view-hub" class="app-view active">
+          <div class="hub-container">
+            <!-- Hero Operational Banner -->
+            <div class="tarkov-hero-banner">
+              <div class="hero-corner corner-tl"></div>
+              <div class="hero-corner corner-tr"></div>
+              <div class="hero-corner corner-bl"></div>
+              <div class="hero-corner corner-br"></div>
+              
+              <div class="hero-content">
+                <div class="hero-tag">PROJECT ZOMBOID // TACTICAL COMMAND</div>
+                <h1 class="hero-title">PZHUB CENTRAL DE PREPARAÇÃO</h1>
+                <p class="hero-desc">
+                  Gerencie seus modpacks sincronizados com o servidor, verifique seus mods instalados localmente e acesse o radar tático isométrico em tempo real para a Build 42.
+                </p>
+
+                <div class="hero-metrics-strip">
+                  <div class="metric-box">
+                    <span class="metric-label">RADAR BRIDGE</span>
+                    <span class="metric-value text-emerald" id="hub-bridge-status">INSTALADO & ATIVO</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">COMPATIBILIDADE</span>
+                    <span class="metric-value text-amber">BUILD 42.0+ / 41</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">MODS DETECTADOS</span>
+                    <span class="metric-value text-cyan" id="hub-mods-count">ESCANEANDO...</span>
+                  </div>
+                </div>
+              </div>
+            <!-- Dynamic Community Modpack Showcase Carousel (Slide) -->
+            <div id="hub-modpack-showcase" class="hub-showcase-container">
+              <div class="showcase-header-bar">
+                <div class="showcase-title-group">
+                  <span class="showcase-kicker">COMUNIDADE PZHUB // WORKSHOP EM DESTAQUE</span>
+                  <h3 class="showcase-title">MODPACKS RECOMENDADOS PELA COMUNIDADE</h3>
+                </div>
+                <div class="showcase-controls">
+                  <button id="btn-showcase-prev" class="showcase-nav-btn" title="Modpack Anterior">‹</button>
+                  <div id="showcase-indicators" class="showcase-dots"></div>
+                  <button id="btn-showcase-next" class="showcase-nav-btn" title="Próximo Modpack">›</button>
+                </div>
+              </div>
+              <div class="showcase-viewport">
+                <div id="showcase-track" class="showcase-track">
+                  <!-- Injetado dinamicamente pelo app.js com fotos, dados e botão instalar direto -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 Main Action Portals (Tarkov Cards) -->
+            <div class="hub-portals-grid">
+              <!-- Portal 1: Tactical Map -->
+              <div class="tarkov-portal-card card-radar" data-target-view="view-map">
+                <div class="portal-corner tl"></div>
+                <div class="portal-corner br"></div>
+                <div class="portal-header">
+                  <span class="portal-code">MODO 01 // CONSUMO</span>
+                  <span class="portal-badge badge-emerald">AO VIVO</span>
+                </div>
+                <div class="portal-icon-area">
+                  <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <h3 class="portal-title">MAPA TÁTICO & RADAR</h3>
+                <p class="portal-desc">
+                  Explore Knox County em projeção isométrica 1:1, navegue por 1.098 ruas com rotas GPS e visualize sua facção em tempo real com modo Mini-Radar.
+                </p>
+                <button class="portal-action-btn btn-emerald">
+                  <span>INICIAR RADAR TÁTICO</span>
+                  <svg viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-7.85-1.42 1.42L16.86 11H5v2z"/></svg>
+                </button>
+              </div>
+
+              <!-- Portal 2: Modpack Manager -->
+              <div class="tarkov-portal-card card-modpack" data-target-view="view-modpacks">
+                <div class="portal-corner tl"></div>
+                <div class="portal-corner br"></div>
+                <div class="portal-header">
+                  <span class="portal-code">MODO 02 // SINCRONIZAÇÃO</span>
+                  <span class="portal-badge badge-amber">PASTEBIN / URL</span>
+                </div>
+                <div class="portal-icon-area">
+                  <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                </div>
+                <h3 class="portal-title">GERENCIADOR DE MODPACKS</h3>
+                <p class="portal-desc">
+                  Importe manifestos remotos de modpacks via links diretos, instale componentes em 1 clique e sincronize automaticamente com seu servidor.
+                </p>
+                <button class="portal-action-btn btn-amber">
+                  <span>ACESSAR MODPACKS</span>
+                  <svg viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-7.85-1.42 1.42L16.86 11H5v2z"/></svg>
+                </button>
+              </div>
+
+              <!-- Portal 3: Local Mods Scanner -->
+              <div class="tarkov-portal-card card-scanner" data-target-view="view-local-mods">
+                <div class="portal-corner tl"></div>
+                <div class="portal-corner br"></div>
+                <div class="portal-header">
+                  <span class="portal-code">MODO 03 // AUDITORIA</span>
+                  <span class="portal-badge badge-cyan">DETECTOR LOCAL</span>
+                </div>
+                <div class="portal-icon-area">
+                  <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                </div>
+                <h3 class="portal-title">MODS LOCAIS INSTALADOS</h3>
+                <p class="portal-desc">
+                  Inspecione todos os mods instalados na pasta do seu Zomboid e no Steam Workshop, verifique versões mínimas e abra diretórios no Windows.
+                </p>
+                <button class="portal-action-btn btn-cyan">
+                  <span>VERIFICAR MODS</span>
+                  <svg viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-7.85-1.42 1.42L16.86 11H5v2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- VIEW 2: GERENCIADOR DE MODPACKS                     -->
+        <!-- =================================================== -->
+        <section id="view-modpacks" class="app-view">
+          <div class="view-content-wrapper">
+            <div class="view-header-strip">
+              <div class="view-title-group">
+                <span class="view-sub">PAINEL DE SINCRONIZAÇÃO</span>
+                <h2 class="view-title">GERENCIADOR DE MODPACKS</h2>
+              </div>
+
+              <!-- Import Bar -->
+              <div class="modpack-import-bar">
+                <div class="input-with-icon">
+                  <svg class="input-icon" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+                  <input type="text" id="input-modpack-url" class="tarkov-input" placeholder="Cole o link do Pastebin ou URL do manifesto JSON..." />
+                </div>
+                <button id="btn-import-modpack" class="tarkov-btn btn-amber">
+                  <span>+ IMPORTAR MODPACK</span>
+                </button>
+                <button id="btn-refresh-modpacks" class="tarkov-btn-icon" title="Recarregar catálogo">
+                  <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Cloud Status and Category Tabs -->
+            <div class="modpack-filter-strip" style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 16px; flex-wrap: wrap; gap: 10px;">
+              <div class="tarkov-filter-group" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <button class="modpack-tab-filter active" data-filter="all" data-i18n="filter_all">TODOS</button>
+                <button class="modpack-tab-filter" data-filter="Military">MILITAR</button>
+                <button class="modpack-tab-filter" data-filter="Weapons">ARMAS</button>
+                <button class="modpack-tab-filter" data-filter="Vehicles">VEÍCULOS</button>
+                <button class="modpack-tab-filter" data-filter="Hardmode">HARDCORE</button>
+                <button class="modpack-tab-filter" data-filter="Building">CONSTRUÇÃO</button>
+                <button class="modpack-tab-filter" data-filter="QoL">QOL</button>
+                <button class="modpack-tab-filter" data-filter="Multiplayer">MULTIPLAYER</button>
+                <select id="select-more-categories" class="tarkov-select" style="padding: 4px 8px; font-size: 11px; width: 140px; height: 26px;">
+                  <option value="">+ MAIS CATEGORIAS...</option>
+                </select>
+                <button class="modpack-tab-filter" data-filter="cloud" data-i18n="filter_cloud">☁️ NUVEM</button>
+                <button class="modpack-tab-filter" data-filter="saved" data-i18n="filter_saved">💾 LOCAIS</button>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- View Mode Toggle (Grade / Lista) para Modpacks -->
+                <div class="view-mode-toggle-group" title="Alternar Modo de Exibição">
+                  <button id="btn-modpacks-view-grid" class="view-toggle-btn active" title="Modo Grade (Cards)">
+                    <svg viewBox="0 0 24 24"><path d="M4 11h6V5H4v6zm0 8h6v-6H4v6zm8 0h6v-6h-6v6zm0-14v6h6V5h-6z"/></svg>
+                    <span>GRADE</span>
+                  </button>
+                  <button id="btn-modpacks-view-list" class="view-toggle-btn" title="Modo Lista (Tabela Tática)">
+                    <svg viewBox="0 0 24 24"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/></svg>
+                    <span>LISTA</span>
+                  </button>
+                </div>
+
+                <input type="text" id="input-search-modpacks" class="tarkov-input" placeholder="Buscar modpack..." data-i18n-placeholder="search_pack_placeholder" style="width: 200px; padding: 6px 10px; font-size: 11px;" />
+                <span id="modpack-cloud-indicator" class="tarkov-tag badge-emerald">CONECTANDO...</span>
+              </div>
+            </div>
+
+            <!-- Modpacks Feed Grid -->
+            <div id="modpacks-feed-container" class="modpacks-grid">
+              <!-- Renderizado dinamicamente pelo modpack_manager.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- VIEW 3: SCANNER DE MODS LOCAIS                      -->
+        <!-- =================================================== -->
+        <section id="view-local-mods" class="app-view">
+          <div class="view-content-wrapper">
+            <div class="view-header-strip">
+              <div class="view-title-group">
+                <span class="view-sub" id="scanner-status-text">AUDITORIA DE ARQUIVOS</span>
+                <h2 class="view-title">MODS INSTALADOS NO ZOMBOID</h2>
+              </div>
+
+              <div class="scanner-controls-bar">
+                <!-- Search Input -->
+                <div class="input-with-icon" style="flex: 1; max-width: 320px;">
+                  <svg class="input-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                  <input type="text" id="input-search-local-mods" class="tarkov-input" placeholder="Buscar mod por nome ou ID..." />
+                </div>
+
+                <!-- Type Filters -->
+                <div class="tarkov-filter-group">
+                  <button class="mod-filter-btn active" data-filter="all">TODOS</button>
+                  <button class="mod-filter-btn" data-filter="local">LOCAIS</button>
+                  <button class="mod-filter-btn" data-filter="workshop">WORKSHOP</button>
+                </div>
+
+                <!-- View Mode Toggle (Grade / Lista) -->
+                <div class="view-mode-toggle-group" title="Alternar Modo de Exibição">
+                  <button id="btn-view-grid" class="view-toggle-btn active" title="Modo Grade (Cards)">
+                    <svg viewBox="0 0 24 24"><path d="M4 11h6V5H4v6zm0 8h6v-6H4v6zm8 0h6v-6h-6v6zm0-14v6h6V5h-6z"/></svg>
+                    <span>GRADE</span>
+                  </button>
+                  <button id="btn-view-list" class="view-toggle-btn" title="Modo Lista (Tabela Tática)">
+                    <svg viewBox="0 0 24 24"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/></svg>
+                    <span>LISTA</span>
+                  </button>
+                </div>
+
+                <button id="btn-open-folder-scanner" class="tarkov-btn" title="Abrir pasta Zomboid/mods no Explorer">
+                  <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                  <span>ABRIR PASTA</span>
+                </button>
+
+                <button id="btn-refresh-local-mods" class="tarkov-btn btn-cyan">
+                  <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                  <span>RE-ESCANEAR</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="scanner-meta-bar">
+              <span id="local-mods-total-count" class="badge-count">CALCULANDO...</span>
+              <span class="meta-dir-tip">Diretório: <code>%USERPROFILE%/Zomboid/mods</code> e <code>steamapps/workshop/content/108600</code></span>
+            </div>
+
+            <!-- Local Mods Cards Grid -->
+            <div id="local-mods-grid" class="local-mods-grid">
+              <!-- Renderizado dinamicamente pelo local_mods_scanner.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- VIEW 4: MAPA TÁTICO & MINI-RADAR                   -->
+        <!-- =================================================== -->
+        <section id="view-map" class="app-view">
+          <!-- Leaflet Map Container -->
+          <div id="map"></div>
+
+          <!-- GTA V MINI-RADAR HUD OVERLAY (APENAS QUANDO ATIVO) -->
+          <div class="gta-radar-overlay">
+            <div class="gta-radar-top-bar">
+              <button id="btn-exit-mini-radar" class="gta-top-btn gta-expand-btn" title="Expandir para Mapa Completo (F9)">
+                <svg viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+                <span>EXPANDIR</span>
+              </button>
+
+              <div class="gta-drag-handle" data-tauri-drag-region title="Clique e arraste o mini-radar">
+                <span>⠿</span>
+              </div>
+
+              <div class="gta-window-actions">
+                <button id="btn-gta-minimize" class="gta-top-btn gta-min-btn" title="Minimizar">🗕</button>
+                <button id="btn-gta-close" class="gta-top-btn gta-close-btn" title="Fechar Radar">✕</button>
+              </div>
+            </div>
+
+            <div class="gta-compass-north" title="Norte Tático">N</div>
+
+            <div class="gta-radar-bars">
+              <div class="gta-bar gta-health-bar" title="Saúde">
+                <div id="gta-health-fill" class="gta-bar-inner" style="width: 100%;"></div>
+              </div>
+              <div class="gta-bar gta-armor-bar" title="Colete / Vigor">
+                <div id="gta-armor-fill" class="gta-bar-inner" style="width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOP TACTICAL HUD HEADER NO MAPA (RESPONSIVO LIQUID GLASS) -->
+          <header class="tactical-header">
+            <div class="header-left">
+              <!-- Botão Retorno ao Hub -->
+              <button id="btn-back-to-hub" class="tarkov-btn-back" title="Voltar ao Centro de Operações / Menu Principal">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                <span class="back-text-full">MENU PRINCIPAL</span>
+                <span class="back-text-short">HUB</span>
+              </button>
+
+              <div id="status-indicator" class="status-indicator" title="Sinal com o servidor PZ B42">
+                <div class="status-dot"></div>
+                <span id="server-name-display">Conectando...</span>
+              </div>
+            </div>
+
+            <div class="header-center">
+              <div class="telemetry-readout">
+                <div class="telemetry-item item-coords">
+                  <span class="telemetry-label">COORD:</span>
+                  <span class="telemetry-val">X:<span id="telemetry-x">0</span> Y:<span id="telemetry-y">0</span></span>
+                </div>
+                <div class="telemetry-item item-floor">
+                  <span class="telemetry-label">ANDAR:</span>
+                  <span class="telemetry-val" id="telemetry-floor">0</span>
+                </div>
+                <div class="telemetry-item item-cell">
+                  <span class="telemetry-label">CELL:</span>
+                  <span class="telemetry-val" id="telemetry-cell">--</span>
+                </div>
+                <div class="telemetry-item item-zoom">
+                  <span class="telemetry-label">ZOOM:</span>
+                  <span class="telemetry-val" id="telemetry-zoom">3x</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="header-right">
+              <div class="opacity-popover-wrapper" id="opacity-popover-wrapper">
+                <div class="opacity-slider-box" id="opacity-slider-box" title="Ajustar transparência da janela">
+                  <span class="opacity-label">OPACIDADE:</span>
+                  <input type="range" id="opacity-slider" min="0.3" max="1.0" step="0.05" value="1.0" />
+                  <span id="opacity-val" class="opacity-val">100%</span>
+                </div>
+              </div>
+
+              <button id="btn-mini-radar" class="tactical-btn" title="Alternar Modo Mini-Radar HUD GTA V (F9)">
+                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                <span class="tactical-btn-label">MINI-RADAR</span>
+              </button>
+
+              <button id="btn-always-on-top" class="tactical-btn" title="Fixar janela sempre no topo">
+                <svg viewBox="0 0 24 24"><path d="M16 9V4l1 0c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1l1 0v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>
+                <span class="tactical-btn-label">FIXAR NO TOPO</span>
+              </button>
+            </div>
+          </header>
+
+          <!-- GPS NAVIGATION HUD (WAZE / GTA V STYLE) -->
+          <div id="gps-navigation-hud" class="gps-hud-bar">
+            <div class="gps-hud-icon">🧭</div>
+            <div class="gps-hud-info">
+              <div class="gps-hud-title">
+                <span id="gps-hud-dest-name">Destino GPS</span>
+                <span id="gps-hud-heading" class="gps-hud-heading">Rumo: --</span>
+              </div>
+              <div class="gps-hud-metrics">
+                <span id="gps-hud-distance" class="gps-hud-dist">0m</span>
+                <span class="gps-hud-separator">•</span>
+                <span id="gps-hud-eta" class="gps-hud-eta">--</span>
+              </div>
+            </div>
+            <button id="gps-hud-cancel" class="gps-hud-cancel-btn" title="Cancelar Rota GPS">✕</button>
+          </div>
+
+          <!-- RETRACTABLE TACTICAL SIDEBAR (DRAWER) -->
+          <aside class="tactical-sidebar">
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Recolher / Expandir Painel (F10)">
+              <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+
+            <nav class="sidebar-nav">
+              <button class="nav-tab active" data-tab="tab-squad" title="Lista de Amigos e Esquadrão">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                <span>Amigos</span>
+              </button>
+              <button class="nav-tab" data-tab="tab-pois" title="Cidades e Regiões">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <span>Cidades</span>
+              </button>
+              <button class="nav-tab" data-tab="tab-loot" title="Filtros de Loot">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                <span>Loot</span>
+              </button>
+              <button class="nav-tab" data-tab="tab-floors" title="Elevação / Andares">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <span>Andar</span>
+              </button>
+              <button class="nav-tab" data-tab="tab-settings" title="Configurações e Mod">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <span>Config</span>
+              </button>
+            </nav>
+
+            <div class="sidebar-content">
+              <!-- TAB 1: SOCIAL & RADAR (RIOT CLIENT STYLE SUITE) -->
+              <div id="tab-squad" class="tab-pane active riot-social-pane">
+                <!-- 1. MEU PERFIL (HEADER ESTILO RIOT) -->
+                <div class="riot-user-card">
+                  <div class="riot-avatar-cluster">
+                    <img id="riot-my-avatar" class="riot-my-avatar-img" src="./assets/logo/PZHub_LogoIcon.svg" alt="Meu Avatar" />
+                    <span class="riot-status-indicator online" title="Status Online"></span>
+                  </div>
+                  <div class="riot-user-details">
+                    <span id="riot-my-name" class="riot-user-title">Operador</span>
+                    <span class="riot-user-subtitle">
+                      <span class="riot-sub-dot"></span>
+                      <span>Online no Radar</span>
+                    </span>
+                  </div>
+                  <button id="btn-toggle-add-friend" class="riot-btn-add-action" title="Adicionar Amigo ao Radar">
+                    <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                  </button>
+                </div>
+
+                <!-- 2. SUB-BARRA DE AÇÕES (ESTILO RIOT TOOLBAR) -->
+                <div class="riot-nav-toolbar">
+                  <button class="riot-toolbar-btn active" data-subtab="subtab-friends" title="Lista de Amigos Cadastrados">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    <span>Amigos</span>
+                    <span id="riot-friends-count-badge" class="riot-pill-badge">0</span>
+                  </button>
+                  <button class="riot-toolbar-btn" data-subtab="subtab-live-radar" title="Sinais Detectados na Sessão">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    <span>Radar Ao Vivo</span>
+                    <span id="riot-live-count-badge" class="riot-pill-badge live">0</span>
+                  </button>
+                </div>
+
+                <!-- 3. BARRA DE PESQUISA (ESTILO RIOT SEARCH) -->
+                <div class="riot-search-box">
+                  <svg class="riot-search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                  <input type="text" id="riot-friends-search-input" class="riot-search-input" placeholder="Pesquisar..." autocomplete="off" />
+                  <button id="btn-clear-friend-search" class="riot-search-clear-btn" style="display: none;">✕</button>
+                </div>
+
+                <!-- 4. GAVETA RETRÁTIL: ADICIONAR SOBREVIVENTE -->
+                <div id="riot-add-friend-drawer" class="riot-add-drawer">
+                  <div class="riot-drawer-header">
+                    <span class="drawer-title">NOVO CONTATO DE RADAR</span>
+                    <button id="btn-close-add-drawer" class="drawer-close-btn" type="button">✕</button>
+                  </div>
+                  <div class="riot-drawer-body">
+                    <div class="riot-field-wrap">
+                      <label class="form-label" for="input-friend-name">NICK NO ZOMBOID *</label>
+                      <input type="text" id="input-friend-name" class="tarkov-input" placeholder="Ex: Rick_Grimes" autocomplete="off" />
+                    </div>
+                    <div class="riot-field-wrap">
+                      <label class="form-label" for="input-friend-nick">APELIDO TÁTICO</label>
+                      <input type="text" id="input-friend-nick" class="tarkov-input" placeholder="Ex: Atirador / Médico" autocomplete="off" />
+                    </div>
+                    <div class="riot-field-wrap">
+                      <label class="form-label">COR DO MARCADOR NO RADAR</label>
+                      <div class="riot-swatches-grid" id="color-swatches-container">
+                        <button type="button" class="swatch-btn active" data-color="#ffdd59" style="--c: #ffdd59;" title="Ouro"></button>
+                        <button type="button" class="swatch-btn" data-color="#00d2d3" style="--c: #00d2d3;" title="Ciano"></button>
+                        <button type="button" class="swatch-btn" data-color="#2ecc71" style="--c: #2ecc71;" title="Esmeralda"></button>
+                        <button type="button" class="swatch-btn" data-color="#a55eea" style="--c: #a55eea;" title="Púrpura"></button>
+                        <button type="button" class="swatch-btn" data-color="#ff6b81" style="--c: #ff6b81;" title="Rosa"></button>
+                        <button type="button" class="swatch-btn" data-color="#ff4757" style="--c: #ff4757;" title="Vermelho"></button>
+                      </div>
+                      <input type="hidden" id="select-friend-color" value="#ffdd59" />
+                    </div>
+                    <button id="btn-add-friend" class="tarkov-btn-action action-primary" style="width: 100%; justify-content: center; margin-top: 4px;">
+                      SALVAR SOBREVIVENTE
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 5. SUB-ABA 1: LISTA DE AMIGOS AGRUPADA (ONLINE / OFFLINE) -->
+                <div id="subtab-friends-content" class="riot-subtab-view active">
+                  <!-- GRUPO ONLINE -->
+                  <div class="riot-group-section">
+                    <div class="riot-group-heading">
+                      <span class="group-title">Online</span>
+                      <span id="count-online-display" class="group-counter">0</span>
+                    </div>
+                    <div id="riot-online-list" class="riot-friends-group-list"></div>
+                  </div>
+
+                  <!-- GRUPO OFFLINE (ACCORDION) -->
+                  <div class="riot-group-section" style="margin-top: 14px;">
+                    <div class="riot-group-heading collapsible" id="toggle-offline-accordion" title="Recolher / Expandir Amigos Offline">
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="group-title">Offline</span>
+                        <span id="count-offline-display" class="group-counter">0</span>
+                      </div>
+                      <svg class="accordion-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                    </div>
+                    <div id="riot-offline-list" class="riot-friends-group-list open"></div>
+                  </div>
+
+                  <!-- Fallback Container mantido para compatibilidade de ID -->
+                  <div id="friends-list-container" style="display: none;"></div>
+                </div>
+
+                <!-- 6. SUB-ABA 2: SINAIS AO VIVO NO RADAR -->
+                <div id="subtab-live-content" class="riot-subtab-view" style="display: none;">
+                  <div id="squad-list-container" class="riot-live-radar-list"></div>
+                </div>
+              </div>
+
+              <!-- TAB 2: CIDADES -->
+              <div id="tab-pois" class="tab-pane">
+                <div class="squad-section-title">
+                  <span>Cidades & Regiões de Knox</span>
+                </div>
+                <div id="poi-list-container" style="display: flex; flex-direction: column; gap: 6px;"></div>
+              </div>
+
+              <!-- TAB 3: FILTROS DE LOOT -->
+              <div id="tab-loot" class="tab-pane">
+                <div class="squad-section-title">
+                  <span>Filtros de Loot & Prédios</span>
+                </div>
+                <div id="category-filters-container"></div>
+              </div>
+
+              <!-- TAB 4: ANDARES / Z-LEVELS -->
+              <div id="tab-floors" class="tab-pane">
+                <div class="squad-section-title">
+                  <span>Nível de Elevação / Andar (Z)</span>
+                </div>
+                <div class="z-levels-grid">
+                  <button class="z-level-btn active" data-floor="0">Térreo (0)</button>
+                  <button class="z-level-btn" data-floor="1">1º Andar</button>
+                  <button class="z-level-btn" data-floor="2">2º Andar</button>
+                  <button class="z-level-btn" data-floor="3">3º Andar</button>
+                  <button class="z-level-btn" data-floor="4">4º Andar</button>
+                  <button class="z-level-btn" data-floor="5">5º Andar</button>
+                  <button class="z-level-btn" data-floor="6">6º Andar</button>
+                  <button class="z-level-btn" data-floor="7">7º Andar</button>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+                  💡 Dica: Use as teclas <strong>[</strong> e <strong>]</strong> do teclado para alternar andares rapidamente.
+                </p>
+              </div>
+
+              <!-- TAB 5: CONFIGURAÇÕES & CACHE -->
+              <div id="tab-settings" class="tab-pane">
+                <div class="squad-section-title">
+                  <span>Sincronização & Mod do Jogo</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <button id="btn-install-mod" class="tactical-btn active" style="justify-content: center; background: rgba(0, 210, 211, 0.15); border-color: var(--accent-cyan); color: var(--accent-cyan); padding: 10px;">
+                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                    <span>Instalar Mod Bridge no Zomboid</span>
+                  </button>
+
+                  <button id="btn-open-mods-folder" class="tactical-btn" style="justify-content: center; padding: 8px;">
+                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px;"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <span>Abrir Pasta Mods do Zomboid</span>
+                  </button>
+                </div>
+
+                <div class="squad-section-title" style="margin-top: 14px;">
+                  <span>Cache Local de Tiles em Disco (Rust)</span>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 11px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="color: var(--text-muted);">Tiles Armazenados:</span>
+                    <span id="cache-tiles-count" style="color: var(--accent-cyan);">Calculando...</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: var(--text-muted);">Espaço em Disco:</span>
+                    <span id="cache-size-mb" style="color: var(--accent-green);">0 MB</span>
+                  </div>
+                  <div style="font-size: 9px; color: var(--text-dim); word-break: break-all;" id="cache-path-display">--</div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                  <button id="btn-refresh-cache" class="tactical-btn" style="flex: 1;">Atualizar Stats</button>
+                  <button id="btn-clear-cache" class="tactical-btn" style="flex: 1; border-color: rgba(255, 71, 87, 0.4); color: var(--accent-red);">Limpar Cache</button>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- BOTTOM FLOATING TACTICAL ACTION DOCK -->
+          <footer class="tactical-dock">
+            <button id="btn-center-self" class="tactical-dock-btn active">
+              <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+              <span>CENTRALIZAR EM MIM</span>
+            </button>
+
+            <button id="btn-follow-toggle" class="tactical-dock-btn">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              <span id="follow-label">SEGUIR JOGADOR</span>
+            </button>
+          </footer>
+        </section>
+      </main>
+
+      <!-- =================================================== -->
+      <!-- MODAL: INSTALAÇÃO EM LOTE DE MODPACK                -->
+      <!-- =================================================== -->
+      <div id="modpack-install-modal" class="tactical-modal-overlay">
+        <div class="tarkov-modal-card">
+          <div class="modal-card-header">
+            <div class="modal-title-wrap">
+              <span class="modal-tag">PZHUB // DEPLOY DE MODPACK</span>
+              <h3 id="install-modal-title" class="modal-title">INSTALANDO PACOTE TÁTICO</h3>
+            </div>
+          </div>
+
+          <div class="modal-card-body">
+            <div class="progress-section">
+              <div class="progress-header-row">
+                <span id="install-modal-status" class="progress-status-text">Inicializando...</span>
+                <span id="install-progress-percent" class="progress-percent-val">0%</span>
+              </div>
+              <div class="tarkov-progress-bar-wrap">
+                <div id="install-progress-fill" class="tarkov-progress-bar-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <div class="log-console-wrap">
+              <div class="console-title">REGISTRO DE OPERAÇÃO // TACTICAL LOG:</div>
+              <div id="install-log-container" class="log-console-content"></div>
+            </div>
+          </div>
+
+          <div class="modal-card-footer">
+            <button id="install-modal-close-btn" class="tarkov-btn btn-emerald" style="display: none; width: 100%;">
+              CONCLUIR & FECHAR
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TACTICAL GENERIC MODAL POPUP -->
+      <div id="tactical-modal" class="tactical-modal-overlay">
+        <div class="tarkov-modal-card" style="max-width: 440px;">
+          <div class="modal-card-header">
+            <div class="modal-title-wrap">
+              <span class="modal-tag">PZHUB // AVISO DO SISTEMA</span>
+              <h3 id="modal-title" class="modal-title">Título</h3>
+            </div>
+          </div>
+          <div id="modal-body" class="modal-card-body" style="font-size: 13px; color: var(--text-main); line-height: 1.5;">
+            Mensagem
+          </div>
+          <div class="modal-card-footer">
+            <button id="modal-close-btn" class="tarkov-btn btn-cyan" style="width: 100%;">
+              ENTENDI
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- MODAL: DETALHES, CHANGELOGS & COMENTÁRIOS DO MODPACK (DESKTOP)        -->
+      <!-- ===================================================================== -->
+      <div id="desktop-modpack-details-modal" class="tactical-modal-overlay">
+        <div class="tarkov-modal-card md-large-modal" style="max-width: 820px; width: 92%;">
+          <div class="md-modal-hero" style="position: relative; height: 160px; overflow: hidden; display: flex; align-items: flex-end; padding: 18px 22px;">
+            <img id="desk-modal-banner" src="" class="md-modal-hero-img" alt="Capa" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.35);" />
+            <div class="md-modal-hero-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(13, 18, 24, 0.98) 15%, transparent 80%);"></div>
+            <button id="desk-modal-close-btn" class="modal-close-icon" style="position: absolute; top: 14px; right: 14px; z-index: 5; background: rgba(0,0,0,0.6); border: 1px solid var(--panel-border); color: #fff; width: 28px; height: 28px; border-radius: 4px; cursor: pointer;">✕</button>
+
+            <div class="md-modal-hero-content" style="position: relative; z-index: 2; display: flex; flex-direction: column; gap: 4px;">
+              <h2 id="desk-modal-title" class="md-modal-title" style="font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 1px;">MODPACK</h2>
+              <div class="md-modal-meta-strip" style="display: flex; gap: 14px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);">
+                <span id="desk-modal-author">Autor</span>
+                <span id="desk-modal-downloads">0 Downloads</span>
+                <span id="desk-modal-likes">❤️ 0 Likes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Abas Táticas -->
+          <div class="md-modal-tabs-strip" style="display: flex; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid var(--panel-border); padding: 0 16px;">
+            <button class="desk-tab-btn active" data-tab="desk-tab-overview">📋 VISÃO GERAL</button>
+            <button class="desk-tab-btn" data-tab="desk-tab-changelogs">🔄 CHANGELOGS</button>
+            <button class="desk-tab-btn" data-tab="desk-tab-comments">💬 COMENTÁRIOS</button>
+            <button class="desk-tab-btn" data-tab="desk-tab-components">📦 COMPONENTES</button>
+          </div>
+
+          <div id="desk-modal-body-content" class="md-modal-body" style="padding: 20px 24px; max-height: 460px; overflow-y: auto; word-break: break-word;">
+            <!-- Conteúdo dinâmico com Markdown formatado -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- MODAL: AUTO-ATUALIZAÇÃO DO PZHub DESKTOP (TARKOV TACTICAL UPDATER)     -->
+      <!-- ===================================================================== -->
+      <div id="tactical-update-modal" class="tactical-modal-overlay">
+        <div class="tarkov-modal-card update-modal-card" style="max-width: 580px; width: 92%;">
+          <div class="update-modal-header" style="padding: 16px 20px; background: rgba(13, 18, 24, 0.95); border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="stat-dot amber" style="width: 8px; height: 8px;"></span>
+              <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; letter-spacing: 1px; color: var(--accent-amber);">NOVA ATUALIZAÇÃO DISPONÍVEL</span>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);">
+              <span id="update-modal-current-ver" style="color: var(--text-muted);">v2.0.0</span>
+              <span style="margin: 0 4px; color: var(--accent-amber);">➔</span>
+              <span id="update-modal-target-ver" style="color: var(--accent-emerald); font-weight: 700;">v2.1.0</span>
+            </div>
+          </div>
+
+          <div class="update-modal-body" style="padding: 20px 22px; max-height: 400px; overflow-y: auto;">
+            <h3 id="update-modal-title" style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 12px; letter-spacing: 0.5px;">PZHub Tactical Patch</h3>
+            
+            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--panel-border); padding: 14px 16px; border-radius: 4px; margin-bottom: 16px;">
+              <div style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--accent-amber); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase;">
+                📋 TRANSMISSÃO DE NOTAS DA VERSÃO
+              </div>
+              <div id="update-modal-notes" class="md-rendered-content" style="font-size: 12px; max-height: 180px; overflow-y: auto;">
+                <!-- Markdown da versão carregado dinamicamente -->
+              </div>
+            </div>
+
+            <!-- Barra de Progresso de Download -->
+            <div id="update-progress-container" style="display: none; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--panel-border); padding: 12px 14px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-family: var(--font-mono); font-size: 11px;">
+                <span id="update-status-msg" style="color: var(--accent-cyan);">Preparando streaming do instalador...</span>
+                <span id="update-progress-text" style="color: var(--accent-emerald); font-weight: 700;">0.0 MB / 0.0 MB (0%)</span>
+              </div>
+              <div class="tarkov-progress-bar-bg" style="height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden;">
+                <div id="update-progress-fill" class="tarkov-progress-bar-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-emerald), #27ae60); transition: width 0.15s ease-out;"></div>
+              </div>
+            </div>
+
+            <!-- Fallback se o download nativo der timeout -->
+            <a id="update-fallback-link" href="#" target="_blank" style="display: none; margin-top: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan); text-align: center; text-decoration: underline;">
+              Ou clique aqui para baixar o instalador manualmente pelo navegador
+            </a>
+          </div>
+
+          <div class="update-modal-footer" style="padding: 14px 20px; background: rgba(13, 18, 24, 0.95); border-top: 1px solid var(--panel-border); display: flex; justify-content: flex-end; gap: 10px;">
+            <button id="btn-dismiss-update" class="tarkov-btn-action" style="padding: 10px 16px;">
+              LEMBRAR MAIS TARDE
+            </button>
+            <button id="btn-confirm-update" class="tarkov-btn-action action-primary" style="padding: 10px 20px;">
+              <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+              <span>BAIXAR E INSTALAR AGORA</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TACTICAL SUPABASE AUTH MODAL (LOGIN & REGISTRO DE OPERADOR SINCRONIZADO COM O WEBSITE) -->
+    <div id="auth-modal" class="tarkov-modal-backdrop">
+      <div class="tarkov-modal-card auth-modal-card">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: var(--accent-amber);"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <h3 id="auth-modal-title" class="modal-title">AUTENTICAÇÃO TÁTICA</h3>
+          </div>
+          <button id="auth-modal-close" class="modal-close-icon" title="Fechar">✕</button>
+        </div>
+
+        <form id="auth-form" class="auth-modal-body">
+          <div class="auth-sync-banner">
+            <span class="banner-icon">🌐</span>
+            <div class="banner-text">
+              <strong>Sincronização Oficial PZHub Cloud</strong>
+              <p>Acesse com a mesma conta criada no website para sincronizar seus modpacks, perfil e configurações na nuvem.</p>
+            </div>
+          </div>
+
+          <div id="auth-username-group" class="form-group" style="display: none;">
+            <label class="form-label" for="auth-username">NOME DE OPERADOR (USERNAME)</label>
+            <input type="text" id="auth-username" class="tarkov-input" placeholder="Ex: Rick_Grimes" autocomplete="username" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="auth-email">E-MAIL DE OPERAÇÕES</label>
+            <input type="email" id="auth-email" class="tarkov-input" placeholder="operador@pzhub.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="auth-password">CHAVE DE ACESSO (SENHA)</label>
+            <input type="password" id="auth-password" class="tarkov-input" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+
+          <div id="auth-status-msg" class="auth-status-message"></div>
+
+          <div class="auth-modal-actions">
+            <button type="submit" id="auth-submit-btn" class="tarkov-btn btn-amber auth-submit-btn">
+              AUTENTICAR NO HUB
+            </button>
+            <button type="button" id="btn-toggle-auth-mode" class="tarkov-btn-subtle auth-toggle-btn">
+              Não tem conta? Cadastre-se como Criador
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

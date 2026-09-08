@@ -1,0 +1,4739 @@
+/* ==========================================================================
+   PZHub - Escape from Tarkov Military Tactical UI Design System
+   ========================================================================== */
+
+:root {
+  --bg-void: #070a0d;
+  --bg-surface: #0b1016;
+  --bg-surface-elevated: #111720;
+  --bg-surface-card: rgba(14, 20, 28, 0.85);
+
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-hover: rgba(229, 142, 38, 0.45);
+  --panel-border-emerald: rgba(46, 204, 113, 0.4);
+
+  /* Tarkov Military Accents */
+  --accent-amber: #e58e26;
+  --accent-amber-hover: #f39c12;
+  --accent-amber-glow: rgba(229, 142, 38, 0.35);
+
+  --accent-emerald: #2ecc71;
+  --accent-emerald-hover: #27ae60;
+  --accent-emerald-glow: rgba(46, 204, 113, 0.35);
+
+  --accent-cyan: #00cec9;
+  --accent-cyan-hover: #81ecec;
+  --accent-cyan-glow: rgba(0, 206, 201, 0.35);
+
+  --accent-red: #d63031;
+  --accent-red-glow: rgba(214, 48, 49, 0.35);
+
+  --text-main: #edf2f7;
+  --text-muted: #8a9ba8;
+  --text-dim: #5c6b78;
+
+  --glass-blur: blur(14px);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', 'Fira Code', monospace;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-void);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(229, 142, 38, 0.04) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 32px 32px, 32px 32px;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   GLOBAL TOP NAVBAR (TARKOV STYLE)
+   ========================================================================== */
+.tarkov-top-bar {
+  height: 40px;
+  background: rgba(11, 16, 22, 0.96);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--panel-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  z-index: 2000;
+  position: relative;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+
+.nav-brand-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.nav-brand-section:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tarkov-brand-logo {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 0 6px var(--accent-amber-glow));
+}
+
+.tarkov-brand-text {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.brand-name {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--text-main);
+}
+
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent-amber);
+  background: rgba(229, 142, 38, 0.12);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.tarkov-nav-tabs {
+  display: flex;
+  height: 100%;
+  gap: 2px;
+}
+
+.tarkov-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.tarkov-tab:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tarkov-tab.active {
+  color: #fff;
+  border-bottom-color: var(--accent-amber);
+  background: linear-gradient(to top, rgba(229, 142, 38, 0.1), transparent);
+}
+
+.tarkov-tab.highlight-tab.active {
+  border-bottom-color: var(--accent-emerald);
+  background: linear-gradient(to top, rgba(46, 204, 113, 0.1), transparent);
+}
+
+.tab-index {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--accent-amber);
+  opacity: 0.85;
+}
+
+.nav-system-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tarkov-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.stat-dot.green {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 6px var(--accent-emerald);
+}
+
+.stat-label {
+  color: var(--text-dim);
+}
+
+.stat-val {
+  color: var(--accent-emerald);
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   VIEWPORT & VIEW CONTAINERS
+   ========================================================================== */
+#main-content-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.app-view.active {
+  display: block;
+}
+
+/* Modo Mapa Especial: Não destrói o DOM do Leaflet */
+#view-map.app-view {
+  display: block;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#view-map.app-view.active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.view-content-wrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px 28px;
+}
+
+/* ==========================================================================
+   VIEW 1: CENTRO DE OPERAÇÕES (HUB / DASHBOARD)
+   ========================================================================== */
+.hub-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Hero Operational Banner */
+.tarkov-hero-banner {
+  position: relative;
+  background: linear-gradient(135deg, rgba(17, 23, 32, 0.95), rgba(9, 13, 18, 0.95));
+  border: 1px solid var(--panel-border);
+  padding: 28px 32px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.hero-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: var(--accent-amber);
+  pointer-events: none;
+}
+.hero-corner.corner-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+.hero-corner.corner-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+.hero-corner.corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+.hero-corner.corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+
+.hero-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent-amber);
+  margin-bottom: 6px;
+}
+
+.hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.hero-desc {
+  color: var(--text-muted);
+  max-width: 800px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.hero-metrics-strip {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.metric-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.text-emerald { color: var(--accent-emerald); }
+.text-amber { color: var(--accent-amber); }
+.text-cyan { color: var(--accent-cyan); }
+
+/* 3 Main Action Portals */
+.hub-portals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.tarkov-portal-card {
+  position: relative;
+  background: var(--bg-surface-card);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--panel-border);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.tarkov-portal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+.tarkov-portal-card.card-radar:hover { border-color: var(--accent-emerald); box-shadow: 0 16px 36px rgba(46, 204, 113, 0.15); }
+.tarkov-portal-card.card-modpack:hover { border-color: var(--accent-amber); box-shadow: 0 16px 36px rgba(229, 142, 38, 0.15); }
+.tarkov-portal-card.card-scanner:hover { border-color: var(--accent-cyan); box-shadow: 0 16px 36px rgba(0, 206, 201, 0.15); }
+
+.portal-corner {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+}
+.portal-corner.tl { top: -1px; left: -1px; border-top: 2px solid rgba(255, 255, 255, 0.3); border-left: 2px solid rgba(255, 255, 255, 0.3); }
+.portal-corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid rgba(255, 255, 255, 0.3); border-right: 2px solid rgba(255, 255, 255, 0.3); }
+
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.portal-code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.portal-icon-area {
+  width: 52px;
+  height: 52px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.portal-icon-area svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+}
+
+.card-radar .portal-icon-area { color: var(--accent-emerald); }
+.card-modpack .portal-icon-area { color: var(--accent-amber); }
+.card-scanner .portal-icon-area { color: var(--accent-cyan); }
+
+.portal-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.portal-desc {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.portal-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.portal-action-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.btn-emerald {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+}
+.btn-emerald:hover {
+  background: var(--accent-emerald);
+  color: #000;
+  box-shadow: 0 0 16px var(--accent-emerald-glow);
+}
+
+.btn-amber {
+  background: rgba(229, 142, 38, 0.15);
+  border-color: var(--accent-amber);
+  color: var(--accent-amber);
+}
+.btn-amber:hover {
+  background: var(--accent-amber);
+  color: #000;
+  box-shadow: 0 0 16px var(--accent-amber-glow);
+}
+
+.btn-cyan {
+  background: rgba(0, 206, 201, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.btn-cyan:hover {
+  background: var(--accent-cyan);
+  color: #000;
+  box-shadow: 0 0 16px var(--accent-cyan-glow);
+}
+
+/* ==========================================================================
+   VIEW 2: GERENCIADOR DE MODPACKS
+   ========================================================================== */
+.view-header-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.view-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.view-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent-amber);
+  letter-spacing: 2px;
+}
+
+.view-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.modpack-import-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 600px;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  fill: var(--text-dim);
+  pointer-events: none;
+}
+
+.tarkov-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 14px 10px 38px;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.tarkov-input:focus {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 10px var(--accent-amber-glow);
+}
+
+.tarkov-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  padding: 9px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tarkov-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.tarkov-btn-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tarkov-btn-icon:hover {
+  color: #fff;
+  border-color: var(--accent-amber);
+  background: rgba(229, 142, 38, 0.1);
+}
+
+.tarkov-btn-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.modpacks-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tarkov-modpack-card {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.modpack-banner-wrapper {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px 24px;
+}
+
+.modpack-banner-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.4) saturate(1.2);
+  transform: scale(1.02);
+}
+
+.modpack-banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(11, 16, 22, 0.98) 15%, transparent 80%);
+}
+
+.modpack-badge-strip {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.modpack-title {
+  position: relative;
+  z-index: 2;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.modpack-content {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modpack-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+.modpack-meta-row strong {
+  color: var(--text-main);
+}
+
+.modpack-desc {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.modpack-mods-section {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modpack-mods-header {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent-amber);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dropdown-arrow {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  transition: transform var(--transition-fast);
+}
+
+.modpack-mods-list {
+  display: none;
+  flex-direction: column;
+  padding: 6px 10px;
+}
+
+.modpack-mods-list.expanded {
+  display: flex;
+}
+
+.modpack-mod-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: var(--transition-fast);
+}
+
+.modpack-mod-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modpack-mod-item:last-child {
+  border-bottom: none;
+}
+
+.mod-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.mod-item-status-icon {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: bold;
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+}
+
+.item-synced .mod-item-status-icon { color: var(--accent-emerald); }
+.item-missing .mod-item-status-icon { color: var(--accent-amber); }
+
+.mod-item-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.mod-item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mod-item-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mod-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mod-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.3;
+}
+
+.pill-workshop { background: rgba(0, 206, 201, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 206, 201, 0.3); }
+.pill-builtin { background: rgba(46, 204, 113, 0.15); color: var(--accent-emerald); border: 1px solid rgba(46, 204, 113, 0.3); }
+.pill-direct { background: rgba(229, 142, 38, 0.15); color: var(--accent-amber); border: 1px solid rgba(229, 142, 38, 0.3); }
+
+.modpack-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 18px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.tarkov-btn-action {
+  flex: 1 1 0;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  padding: 10px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.tarkov-btn-action svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+.tarkov-btn-action span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tarkov-btn-action.btn-details-pack {
+  flex: 1 1 0;
+  color: var(--accent-cyan);
+  border-color: rgba(14, 165, 233, 0.35);
+  background: rgba(14, 165, 233, 0.06);
+}
+.tarkov-btn-action.btn-details-pack:hover {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: var(--accent-cyan);
+}
+
+.tarkov-btn-action.action-primary {
+  flex: 1.15 1 0;
+  background: var(--accent-amber);
+  border-color: var(--accent-amber);
+  color: #000;
+}
+.tarkov-btn-action.action-primary:hover {
+  background: var(--accent-amber-hover);
+  box-shadow: 0 0 16px var(--accent-amber-glow);
+}
+
+.tarkov-btn-action.synced,
+.tarkov-btn-action.btn-reinstall-pack {
+  flex: 1.15 1 0;
+  background: rgba(46, 204, 113, 0.12);
+  border-color: rgba(46, 204, 113, 0.5);
+  color: var(--accent-emerald);
+}
+.tarkov-btn-action.synced:hover,
+.tarkov-btn-action.btn-reinstall-pack:hover {
+  background: rgba(46, 204, 113, 0.22);
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
+}
+
+.tarkov-btn-action.btn-uninstall-pack {
+  flex: 1 1 0;
+  color: var(--accent-red);
+  border-color: rgba(214, 48, 49, 0.3);
+  background: rgba(214, 48, 49, 0.06);
+}
+.tarkov-btn-action.btn-uninstall-pack:hover {
+  background: rgba(214, 48, 49, 0.18);
+  border-color: var(--accent-red);
+  box-shadow: 0 0 12px rgba(214, 48, 49, 0.3);
+}
+
+.btn-remove-pack {
+  color: var(--text-dim);
+}
+.btn-remove-pack:hover {
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+/* ==========================================================================
+   VIEW 3: SCANNER DE MODS LOCAIS
+   ========================================================================== */
+.scanner-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tarkov-filter-group {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px;
+}
+
+.mod-filter-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.mod-filter-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.scanner-meta-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.badge-count {
+  background: rgba(0, 206, 201, 0.15);
+  color: var(--accent-cyan);
+  padding: 3px 8px;
+  font-weight: bold;
+}
+
+.meta-dir-tip {
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.meta-dir-tip code {
+  color: var(--text-muted);
+}
+
+.local-mods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.tarkov-mod-card {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--panel-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.tarkov-mod-card:hover {
+  border-color: rgba(0, 206, 201, 0.4);
+  transform: translateY(-2px);
+}
+
+.mod-card-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mod-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mod-thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mod-header-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.mod-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mod-id-code code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent-cyan);
+}
+
+.mod-card-body {
+  flex: 1;
+}
+
+.mod-card-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mod-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 10px;
+}
+
+.mod-tags-group {
+  display: flex;
+  gap: 6px;
+}
+
+.mod-actions-group {
+  display: flex;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   TAGS & BADGES
+   ========================================================================== */
+.tarkov-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  text-transform: uppercase;
+}
+
+.badge-amber { background: var(--accent-amber); color: #000; }
+.badge-emerald { background: var(--accent-emerald); color: #000; }
+.badge-cyan { background: var(--accent-cyan); color: #000; }
+.badge-version { background: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+.badge-synced { background: rgba(46, 204, 113, 0.2); color: var(--accent-emerald); border: 1px solid var(--accent-emerald); }
+.badge-pending { background: rgba(229, 142, 38, 0.2); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+.badge-workshop { background: rgba(0, 206, 201, 0.15); color: var(--accent-cyan); }
+.badge-local { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
+
+/* ==========================================================================
+   VIEW 4: MAPA TÁTICO & BOTÃO DE RETORNO
+   ========================================================================== */
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-color: #070a0e;
+}
+
+.tarkov-btn-back {
+  background: rgba(229, 142, 38, 0.15);
+  border: 1px solid var(--accent-amber);
+  color: var(--accent-amber);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tarkov-btn-back:hover {
+  background: var(--accent-amber);
+  color: #000;
+  box-shadow: 0 0 14px var(--accent-amber-glow);
+}
+
+.tarkov-btn-back svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.tactical-header {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  z-index: 1005;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap !important;
+  padding: 0 12px;
+  background: rgba(10, 15, 22, 0.94);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald);
+}
+
+.telemetry-readout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.telemetry-label {
+  color: var(--text-dim);
+}
+
+.telemetry-val {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.tactical-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tactical-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.tactical-btn:hover {
+  border-color: var(--accent-amber);
+  color: #fff;
+}
+
+.tactical-btn.active {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+}
+
+/* ==========================================================================
+   GPS HUD BAR
+   ========================================================================== */
+.gps-hud-bar {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(12, 18, 28, 0.92);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--accent-cyan);
+  padding: 8px 18px;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(0, 206, 201, 0.2);
+}
+
+.gps-hud-bar.active {
+  display: flex;
+}
+
+.gps-hud-icon {
+  font-size: 20px;
+}
+
+.gps-hud-title {
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  display: flex;
+  gap: 10px;
+}
+
+.gps-hud-heading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-cyan);
+}
+
+.gps-hud-metrics {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.gps-hud-dist {
+  color: var(--accent-emerald);
+  font-weight: bold;
+}
+
+.gps-hud-cancel-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-red);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ==========================================================================
+   SIDEBAR DRAWER & DOCK
+   ========================================================================== */
+.tactical-sidebar {
+  position: absolute;
+  top: 58px;
+  left: 8px;
+  bottom: 12px;
+  width: 330px;
+  background: rgba(10, 15, 22, 0.94);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  transition: transform var(--transition-smooth);
+}
+
+.tactical-sidebar.collapsed {
+  transform: translateX(-342px);
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  right: -28px;
+  top: 10px;
+  width: 28px;
+  height: 34px;
+  background: rgba(10, 15, 22, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(229, 142, 38, 0.2);
+  color: var(--accent-amber);
+}
+
+.sidebar-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  transition: transform 0.25s ease;
+}
+
+.tactical-sidebar.collapsed .sidebar-toggle-btn svg {
+  transform: rotate(180deg);
+}
+
+.sidebar-nav {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.nav-tab.active {
+  color: var(--accent-cyan);
+  background: rgba(0, 206, 201, 0.1);
+  border-bottom: 2px solid var(--accent-cyan);
+}
+
+.nav-tab svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+}
+
+.tab-pane {
+  display: none !important;
+}
+
+.tab-pane.active {
+  display: block !important;
+}
+
+.tab-pane.active.riot-social-pane {
+  display: flex !important;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.squad-section-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent-amber);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tactical-input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 12px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.tactical-select,
+.tarkov-select {
+  background-color: #0e141c;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  padding: 6px 28px 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-radius: 4px;
+  cursor: pointer;
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e58e26' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 8px) center;
+  background-size: 10px 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tactical-select:focus,
+.tarkov-select:focus {
+  outline: none;
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 8px rgba(229, 142, 38, 0.4);
+}
+
+.tactical-select option,
+.tactical-select optgroup,
+.tarkov-select option,
+.tarkov-select optgroup {
+  background-color: #141922 !important;
+  color: #f8fafc !important;
+  font-family: var(--font-mono);
+  padding: 8px 12px;
+}
+
+.z-levels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.z-level-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  padding: 8px 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.z-level-btn.active {
+  background: rgba(0, 206, 201, 0.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.tactical-dock {
+  position: absolute;
+  bottom: 14px;
+  left: calc(346px + (100% - 346px) / 2);
+  transform: translateX(-50%);
+  z-index: 1001;
+  display: flex;
+  gap: 10px;
+  background: rgba(10, 15, 22, 0.92);
+  backdrop-filter: var(--glass-blur);
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  transition: left 0.3s ease, transform 0.3s ease;
+}
+
+body:has(.tactical-sidebar.collapsed) .tactical-dock {
+  left: 50%;
+}
+
+.tactical-dock-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tactical-dock-btn.active {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+}
+
+.tactical-dock-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* ==========================================================================
+   MINI-RADAR GTA V OVERLAY
+   ========================================================================== */
+.gta-radar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 900;
+  display: none;
+}
+
+body.mini-radar-active .gta-radar-overlay {
+  display: block;
+}
+
+body.mini-radar-active .tarkov-top-bar,
+body.mini-radar-active .tactical-header,
+body.mini-radar-active .tactical-sidebar,
+body.mini-radar-active .tactical-dock,
+body.mini-radar-active #gps-navigation-hud {
+  display: none !important;
+}
+
+.gta-radar-top-bar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 6px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: auto;
+}
+
+.gta-radar-overlay:hover .gta-radar-top-bar {
+  opacity: 1;
+}
+
+.gta-top-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gta-top-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.gta-drag-handle {
+  cursor: move;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.gta-compass-north {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--accent-red);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gta-radar-bars {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.gta-bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.9);
+}
+
+.gta-bar-inner {
+  height: 100%;
+}
+
+.gta-health-bar .gta-bar-inner { background: #2ecc71; }
+.gta-armor-bar .gta-bar-inner { background: #00d2d3; }
+
+/* ==========================================================================
+   MODAIS (TARKOV MODAL STYLE)
+   ========================================================================== */
+.tactical-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 5000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.tactical-modal-overlay.visible {
+  display: flex;
+}
+
+.tarkov-modal-card {
+  background: #0d1218;
+  border: 1px solid var(--accent-amber);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px var(--accent-amber-glow);
+  width: 100%;
+  max-width: 580px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-card-header {
+  background: rgba(229, 142, 38, 0.1);
+  border-bottom: 1px solid rgba(229, 142, 38, 0.3);
+  padding: 16px 20px;
+}
+
+.modal-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-amber);
+  letter-spacing: 2px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.modal-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-header-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.progress-status-text {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.progress-percent-val {
+  color: var(--accent-amber);
+  font-weight: 700;
+}
+
+.tarkov-progress-bar-wrap {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.tarkov-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-amber), #ffc048);
+  box-shadow: 0 0 12px var(--accent-amber-glow);
+  transition: width 0.3s ease;
+}
+
+.log-console-wrap {
+  background: #06090c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px;
+}
+
+.console-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.log-console-content {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.log-line {
+  line-height: 1.4;
+}
+
+.log-time { color: var(--text-dim); }
+.log-info { color: var(--text-muted); }
+.log-success { color: var(--accent-emerald); font-weight: bold; }
+.log-error { color: var(--accent-red); font-weight: bold; }
+
+.modal-card-footer {
+  padding: 14px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Toast Notifications */
+.tarkov-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0d1218;
+  border: 1px solid var(--accent-amber);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  z-index: 6000;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.tarkov-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.tarkov-toast.toast-success { border-color: var(--accent-emerald); }
+.tarkov-toast.toast-error { border-color: var(--accent-red); }
+
+.toast-indicator {
+  width: 4px;
+  height: 24px;
+  background: currentColor;
+}
+
+.toast-body {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #fff;
+}
+
+.tarkov-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.tarkov-empty-svg {
+  width: 42px;
+  height: 42px;
+  fill: currentColor;
+  margin-bottom: 12px;
+}
+
+.tarkov-empty-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.tarkov-empty-desc {
+  font-size: 11px;
+  max-width: 400px;
+}
+
+.tarkov-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-cyan);
+}
+
+.tarkov-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(0, 206, 201, 0.2);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Modpack Tab Filter & Controls */
+.modpack-tab-filter {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.modpack-tab-filter:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.modpack-tab-filter.active {
+  background: rgba(229, 142, 38, 0.2);
+  color: var(--accent-amber);
+}
+
+.tarkov-btn-mini {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tarkov-btn-mini:hover {
+  background: var(--accent-cyan);
+  color: #000;
+  border-color: var(--accent-cyan);
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  transition: transform var(--transition-smooth);
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   PZHUB ULTRA-LIGHTWEIGHT SPLASH SCREEN / INTRO
+   ========================================================================== */
+.pzhub-splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  background: radial-gradient(circle at 50% 50%, #1a0808 0%, #0d0607 45%, #040608 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.7s ease;
+  will-change: opacity, visibility;
+  pointer-events: auto;
+}
+
+.pzhub-splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-backdrop-radial {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(126, 23, 21, 0.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.splash-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  animation: splashFadeInScale 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.splash-logo-container {
+  position: relative;
+  width: 360px;
+  max-width: 85vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.splash-logo-img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 24px rgba(126, 23, 21, 0.7)) drop-shadow(0 0 50px rgba(229, 142, 38, 0.25));
+  animation: splashPulse 2.4s ease-in-out infinite alternate;
+}
+
+.splash-status-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.splash-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: rgba(237, 242, 247, 0.75);
+  text-transform: uppercase;
+}
+
+.splash-loader-bar {
+  width: 200px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.splash-loader-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, #7e1715, #e58e26, #2ecc71);
+  box-shadow: 0 0 8px rgba(229, 142, 38, 0.6);
+  animation: splashBarMotion 1.4s ease-in-out infinite;
+}
+
+.splash-sub-status {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-dim, #5c6b78);
+}
+
+@keyframes splashFadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes splashPulse {
+  0% {
+    filter: drop-shadow(0 0 20px rgba(126, 23, 21, 0.5)) drop-shadow(0 0 40px rgba(229, 142, 38, 0.2));
+  }
+  100% {
+    filter: drop-shadow(0 0 32px rgba(126, 23, 21, 0.85)) drop-shadow(0 0 60px rgba(229, 142, 38, 0.35));
+  }
+}
+@keyframes splashBarMotion {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Seletor Tático de Idiomas (i18n) */
+.lang-selector-group {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 2px;
+  gap: 2px;
+  margin-right: 8px;
+}
+
+.lang-btn-option {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim, #7e8c9b);
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lang-btn-option:hover {
+  color: var(--text-main, #e8edf3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lang-btn-option.active {
+  background: rgba(229, 142, 38, 0.25);
+  color: var(--accent-amber, #e58e26);
+  border-color: rgba(229, 142, 38, 0.5);
+  box-shadow: 0 0 6px rgba(229, 142, 38, 0.3);
+}
+
+/* ========================================================================= */
+/* HUB MODPACK SHOWCASE CAROUSEL (DYNAMIC COMMUNITY SLIDER)                  */
+/* ========================================================================= */
+.hub-showcase-container {
+  margin-bottom: 22px;
+  background: rgba(12, 17, 24, 0.7);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.showcase-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.showcase-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.showcase-kicker {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent-amber);
+}
+
+.showcase-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.showcase-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.showcase-nav-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-radius: 3px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.showcase-nav-btn:hover {
+  background: rgba(229, 142, 38, 0.2);
+  border-color: var(--accent-amber);
+  color: #ffffff;
+}
+
+.showcase-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.showcase-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.showcase-dot.active {
+  width: 18px;
+  background: var(--accent-amber);
+  box-shadow: 0 0 6px var(--accent-amber-glow);
+}
+
+.showcase-viewport {
+  position: relative;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.showcase-track {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+}
+
+.showcase-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateX(10px);
+  display: flex;
+}
+
+.showcase-slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+  position: relative;
+}
+
+.slide-banner-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+}
+
+.slide-gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(8, 12, 18, 0.95) 0%, rgba(8, 12, 18, 0.82) 45%, rgba(8, 12, 18, 0.35) 100%);
+}
+
+.slide-content-overlay {
+  position: relative;
+  z-index: 2;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 680px;
+  gap: 10px;
+}
+
+.slide-badge-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.slide-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.slide-desc {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.slide-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.slide-operator-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+}
+
+.slide-meta-label {
+  color: var(--text-dim);
+}
+
+.slide-meta-val {
+  color: var(--accent-amber);
+  font-weight: 700;
+}
+
+.slide-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-showcase-install {
+  font-size: 10.5px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.btn-showcase-install svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.btn-showcase-view-more {
+  font-size: 10.5px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-showcase-view-more svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+/* ========================================================================= */
+/* ABA 3: VIEW MODE TOGGLE & TACTICAL LIST VIEW                              */
+/* ========================================================================= */
+.view-mode-toggle-group {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.view-toggle-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.view-toggle-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.view-toggle-btn.active {
+  background: rgba(229, 142, 38, 0.2);
+  color: var(--accent-amber);
+  box-shadow: 0 0 6px rgba(229, 142, 38, 0.2);
+}
+
+/* Container de Lista (Tabela Tática) */
+.local-mods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 24px;
+}
+
+.local-mod-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(15, 21, 30, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  gap: 12px;
+  transition: all var(--transition-fast);
+}
+
+.local-mod-row:hover {
+  background: rgba(20, 30, 44, 0.85);
+  border-color: rgba(229, 142, 38, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transform: translateX(2px);
+}
+
+.row-icon-col {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.row-thumb-img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.row-info-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row-mod-name {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-mod-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-mod-id {
+  font-family: var(--font-mono);
+  color: var(--accent-amber);
+  font-size: 9.5px;
+  background: rgba(229, 142, 38, 0.08);
+  padding: 1px 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.row-desc-preview {
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-badges-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.row-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tarkov-btn-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tarkov-btn-mini svg {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+}
+
+.tarkov-btn-mini:hover {
+  background: rgba(229, 142, 38, 0.18);
+  border-color: var(--accent-amber);
+  color: #ffffff;
+}
+
+.tarkov-btn-mini.btn-open-workshop:hover {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: var(--accent-cyan);
+  color: #ffffff;
+}
+
+/* ========================================================================= */
+/* TEMA CLARO DEFINITIVO (TACTICAL APPLE / PRO WHITE MODE)                   */
+/* ========================================================================= */
+body.theme-light {
+  --bg-darkest: #f4f4f6;
+  --bg-darker: #ffffff;
+  --bg-dark: #ffffff;
+  --bg-card: #ffffff;
+  --bg-panel: #ffffff;
+  --panel-border: rgba(0, 0, 0, 0.08);
+  --panel-border-bright: rgba(0, 0, 0, 0.16);
+  --text-main: #111827;
+  --text-muted: #4b5563;
+  --text-dim: #6b7280;
+  background-color: #f4f4f6 !important;
+  color: #111827 !important;
+  color-scheme: light;
+}
+
+/* Top Navbar 40px Apple Glass */
+body.theme-light .tarkov-top-bar {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+}
+
+body.theme-light .tarkov-brand-text .brand-name {
+  color: #111827 !important;
+}
+
+body.theme-light .tarkov-tab {
+  color: #6b7280;
+}
+
+body.theme-light .tarkov-tab:hover {
+  color: #111827;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.theme-light .tarkov-tab.active {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.08);
+  border-bottom: 2px solid #d97706;
+}
+
+body.theme-light .tarkov-tab.highlight-tab.active {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+  border-bottom: 2px solid #16a34a;
+}
+
+body.theme-light .tarkov-stat-item {
+  background: #f3f4f6 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+body.theme-light .tarkov-stat-item .stat-val {
+  color: #16a34a !important;
+}
+
+/* Hub Hero Banner */
+body.theme-light .tarkov-hero-banner {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-light .hero-title {
+  color: #111827 !important;
+}
+
+body.theme-light .hero-desc {
+  color: #4b5563 !important;
+}
+
+body.theme-light .metric-box {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Hub Showcase Carousel em Modo Claro */
+body.theme-light .hub-showcase-container {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-light .showcase-header-bar {
+  background: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+body.theme-light .showcase-title {
+  color: #111827 !important;
+}
+
+body.theme-light .slide-gradient-overlay {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.88) 45%, rgba(255, 255, 255, 0.35) 100%) !important;
+}
+
+body.theme-light .slide-title {
+  color: #111827 !important;
+  text-shadow: none !important;
+}
+
+body.theme-light .slide-desc {
+  color: #4b5563 !important;
+}
+
+body.theme-light .showcase-nav-btn {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+}
+
+body.theme-light .showcase-nav-btn:hover {
+  background: #f3f4f6 !important;
+  border-color: #d97706 !important;
+}
+
+body.theme-light .showcase-dot {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+body.theme-light .showcase-dot.active {
+  background: #d97706 !important;
+}
+
+/* Portais da Home */
+body.theme-light .tarkov-portal-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-light .portal-title {
+  color: #111827 !important;
+}
+
+body.theme-light .portal-desc {
+  color: #4b5563 !important;
+}
+
+/* ========================================================================= */
+/* ABA 2 (MODPACKS) - WHITE MODE SEM MANCHAS ESCURAS                         */
+/* ========================================================================= */
+body.theme-light .tarkov-modpack-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-light .tarkov-modpack-card:hover {
+  border-color: rgba(217, 119, 6, 0.5) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.theme-light .modpack-banner-overlay {
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.1) 100%) !important;
+}
+
+body.theme-light .modpack-title {
+  color: #111827 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+
+body.theme-light .modpack-content {
+  background: #ffffff !important;
+}
+
+body.theme-light .modpack-author,
+body.theme-light .modpack-count {
+  color: #4b5563 !important;
+}
+
+body.theme-light .modpack-author strong,
+body.theme-light .modpack-count strong {
+  color: #111827 !important;
+}
+
+body.theme-light .modpack-desc {
+  color: #4b5563 !important;
+}
+
+/* EXTERMINA O BLOCO ESCURO / CINZA DE LAMA DO ACCORDION */
+body.theme-light .modpack-mods-section {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 4px;
+}
+
+body.theme-light .modpack-mods-header {
+  background: #f3f4f6 !important;
+  color: #b45309 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+body.theme-light .modpack-mods-list {
+  background: #f9fafb !important;
+}
+
+body.theme-light .modpack-mod-item {
+  border-bottom: 1px solid #f3f4f6 !important;
+  background: transparent !important;
+}
+
+body.theme-light .mod-item-name {
+  color: #111827 !important;
+}
+
+body.theme-light .mod-item-sub {
+  color: #6b7280 !important;
+}
+
+body.theme-light .mod-pill.pill-workshop {
+  background: rgba(14, 165, 233, 0.1) !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(14, 165, 233, 0.25) !important;
+}
+
+body.theme-light .mod-pill.pill-builtin {
+  background: rgba(22, 163, 74, 0.1) !important;
+  color: #16a34a !important;
+  border: 1px solid rgba(22, 163, 74, 0.25) !important;
+}
+
+body.theme-light .mod-pill.pill-direct {
+  background: rgba(229, 142, 38, 0.1) !important;
+  color: #b45309 !important;
+  border: 1px solid rgba(229, 142, 38, 0.25) !important;
+}
+
+/* Filtros de Categoria em Modo Claro */
+body.theme-light .modpack-tab-filter {
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #4b5563 !important;
+}
+
+body.theme-light .modpack-tab-filter:hover {
+  background: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+body.theme-light .modpack-tab-filter.active {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 700 !important;
+}
+
+/* Botões de Ação de Modpack em Modo Claro */
+body.theme-light .modpack-card-actions {
+  background: #ffffff !important;
+  border-top: 1px solid #f3f4f6 !important;
+}
+
+body.theme-light .tarkov-btn-action {
+  background: #f9fafb !important;
+  border-color: #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+body.theme-light .tarkov-btn-action.btn-details-pack {
+  background: rgba(14, 165, 233, 0.08) !important;
+  border-color: rgba(14, 165, 233, 0.3) !important;
+  color: #0284c7 !important;
+}
+body.theme-light .tarkov-btn-action.btn-details-pack:hover {
+  background: rgba(14, 165, 233, 0.16) !important;
+  border-color: #0284c7 !important;
+}
+
+body.theme-light .tarkov-btn-action.action-primary {
+  background: #d97706 !important;
+  border-color: #b45309 !important;
+  color: #ffffff !important;
+}
+body.theme-light .tarkov-btn-action.action-primary:hover {
+  background: #b45309 !important;
+  box-shadow: 0 0 12px rgba(217, 119, 6, 0.3) !important;
+}
+
+body.theme-light .tarkov-btn-action.synced,
+body.theme-light .tarkov-btn-action.btn-reinstall-pack {
+  background: rgba(22, 163, 74, 0.1) !important;
+  border-color: rgba(22, 163, 74, 0.35) !important;
+  color: #16a34a !important;
+}
+body.theme-light .tarkov-btn-action.synced:hover,
+body.theme-light .tarkov-btn-action.btn-reinstall-pack:hover {
+  background: rgba(22, 163, 74, 0.2) !important;
+  border-color: #16a34a !important;
+}
+
+body.theme-light .tarkov-btn-action.btn-uninstall-pack {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: #dc2626 !important;
+}
+body.theme-light .tarkov-btn-action.btn-uninstall-pack:hover {
+  background: rgba(239, 68, 68, 0.16) !important;
+  border-color: #dc2626 !important;
+}
+
+/* ========================================================================= */
+/* ABA 3 (MODS LOCAIS) - WHITE MODE GRADE & LISTA                           */
+/* ========================================================================= */
+body.theme-light .tarkov-mod-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-light .mod-card-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+body.theme-light .mod-card-title {
+  color: #111827 !important;
+}
+
+body.theme-light .mod-card-desc {
+  color: #4b5563 !important;
+}
+
+body.theme-light .view-mode-toggle-group {
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+body.theme-light .view-toggle-btn {
+  color: #6b7280 !important;
+}
+
+body.theme-light .view-toggle-btn:hover {
+  color: #111827 !important;
+  background: #e5e7eb !important;
+}
+
+body.theme-light .view-toggle-btn.active {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 700 !important;
+}
+
+body.theme-light .local-mod-row {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.theme-light .local-mod-row:hover {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.theme-light .row-thumb-img {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+}
+
+body.theme-light .row-mod-name {
+  color: #111827 !important;
+}
+
+body.theme-light .row-mod-meta {
+  color: #6b7280 !important;
+}
+
+body.theme-light .tarkov-btn-mini {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+}
+
+body.theme-light .tarkov-btn-mini:hover {
+  background: #f3f4f6 !important;
+  border-color: #b45309 !important;
+  color: #b45309 !important;
+}
+
+/* ========================================================================= */
+/* ABA 4 (MAPA & RADAR) - TACTICAL WHITE HUD                                 */
+/* ========================================================================= */
+body.theme-light .tactical-header {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  color: #111827 !important;
+}
+
+body.theme-light .tactical-btn {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+}
+
+body.theme-light .tactical-btn:hover {
+  background: #f3f4f6 !important;
+  border-color: #d97706 !important;
+}
+
+body.theme-light .telemetry-label {
+  color: #6b7280 !important;
+}
+
+body.theme-light .telemetry-val {
+  color: #0284c7 !important;
+  font-weight: 700 !important;
+}
+
+body.theme-light .tarkov-btn-back {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+}
+
+body.theme-light .tarkov-btn-back:hover {
+  background: #f3f4f6 !important;
+  border-color: #b45309 !important;
+}
+
+body.theme-light .status-indicator {
+  color: #4b5563 !important;
+}
+
+body.theme-light .tactical-sidebar,
+body.theme-light .map-control-panel,
+body.theme-light .preset-sidebar,
+body.theme-light .tarkov-modal-box,
+body.theme-light .tarkov-modal {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+  color: #111827 !important;
+}
+
+/* Inputs e Selects Apple Style */
+body.theme-light .tarkov-input,
+body.theme-light .tactical-input,
+body.theme-light .tarkov-textarea {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+}
+
+body.theme-light .tarkov-input:focus,
+body.theme-light .tactical-input:focus,
+body.theme-light .tarkov-textarea:focus {
+  border-color: #0071e3 !important;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15) !important;
+}
+
+body.theme-light .tarkov-select,
+body.theme-light .tactical-select {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+  color-scheme: light !important;
+}
+
+body.theme-light .tarkov-btn {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-light .tarkov-btn:hover {
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+}
+
+body.theme-light .tarkov-btn.btn-amber {
+  background: linear-gradient(180deg, #d97706 0%, #b45309 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3) !important;
+}
+
+body.theme-light .tarkov-btn.btn-emerald {
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3) !important;
+}
+
+body.theme-light .tarkov-btn.btn-cyan {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3) !important;
+}
+
+/* ========================================================================= */
+/* ESTILOS: GERENCIADOR DE MODPACKS - GRADE vs LISTA TÁTICA                  */
+/* ========================================================================= */
+.modpacks-grid {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modpacks-grid.is-grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+}
+
+.modpacks-grid.is-grid-view .tarkov-modpack-card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.modpacks-grid.is-grid-view .modpack-banner-wrapper {
+  height: 140px;
+}
+
+.modpacks-grid.is-list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modpacks-grid.is-list-view .tarkov-modpack-card {
+  display: grid;
+  grid-template-columns: 220px 1fr 340px;
+  align-items: stretch;
+  min-height: 110px;
+  margin-bottom: 0;
+}
+
+.modpacks-grid.is-list-view .modpack-banner-wrapper {
+  height: 100%;
+  min-height: 110px;
+  padding: 10px 14px;
+}
+
+.modpacks-grid.is-list-view .modpack-content {
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.modpacks-grid.is-list-view .modpack-mods-section {
+  display: none;
+}
+
+.modpacks-grid.is-list-view .modpack-card-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  border-left: 1px solid var(--panel-border);
+}
+
+@media (max-width: 950px) {
+  .modpacks-grid.is-list-view .tarkov-modpack-card {
+    grid-template-columns: 1fr;
+  }
+  .modpacks-grid.is-list-view .modpack-card-actions {
+    border-left: none;
+    border-top: 1px solid var(--panel-border);
+  }
+}
+
+/* ========================================================================= */
+/* ESTILOS: MARKDOWN TÁTICO & PREVENÇÃO DE OVERFLOW                          */
+/* ========================================================================= */
+.md-rendered-content {
+  color: var(--text-main);
+  line-height: 1.7;
+  font-size: 13px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.md-rendered-content h1,
+.md-rendered-content h2,
+.md-rendered-content h3,
+.md-rendered-content h4 {
+  color: #fff;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.md-rendered-content h1 { font-size: 16px; border-bottom: 1px solid var(--panel-border); padding-bottom: 4px; }
+.md-rendered-content h2 { font-size: 14px; }
+.md-rendered-content h3 { font-size: 13px; color: var(--accent-amber); }
+
+.md-rendered-content blockquote {
+  border-left: 3px solid var(--accent-amber);
+  background: rgba(229, 142, 38, 0.08);
+  padding: 8px 12px;
+  margin: 10px 0;
+  color: var(--text-muted);
+}
+
+.tarkov-code-block {
+  background: #080c10;
+  border: 1px solid var(--panel-border);
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-cyan);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tarkov-inline-code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-amber);
+}
+
+.tarkov-list {
+  padding-left: 18px;
+  margin: 8px 0;
+}
+
+.tarkov-list li {
+  margin-bottom: 4px;
+}
+
+.tarkov-divider {
+  border: none;
+  border-top: 1px solid var(--panel-border);
+  margin: 14px 0;
+}
+
+.desk-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.desk-tab-btn.active {
+  color: #fff;
+  border-bottom-color: var(--accent-amber);
+}
+
+.desk-tab-btn:hover:not(.active) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Suporte White Mode ao Markdown e Modal */
+body.theme-light .md-rendered-content {
+  color: #1f2937;
+}
+
+body.theme-light .md-rendered-content h1,
+body.theme-light .md-rendered-content h2,
+body.theme-light .md-rendered-content h4 {
+  color: #111827;
+}
+
+body.theme-light .desk-tab-btn.active {
+  color: #d97706;
+  border-bottom-color: #d97706;
+}
+
+body.theme-light .tarkov-code-block {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #0369a1;
+}
+
+body.theme-light .tarkov-inline-code {
+  background: #f3f4f6;
+  color: #b45309;
+}
+
+/* ========================================================================= */
+/* ESTILOS: MODAL TÁTICO DE AUTO-ATUALIZAÇÃO (UPDATER HUD)                   */
+/* ========================================================================= */
+.update-modal-card {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  animation: tarkovModalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tarkovModalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.update-modal-header {
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.update-modal-body {
+  color: var(--text-main);
+}
+
+.update-modal-footer {
+  border-top: 1px solid var(--panel-border);
+}
+
+/* White Mode para o Modal de Atualização */
+body.theme-light .update-modal-card {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.theme-light .update-modal-header {
+  background: #f9fafb !important;
+  border-bottom-color: #e5e7eb !important;
+}
+
+body.theme-light #update-modal-title {
+  color: #111827 !important;
+}
+
+body.theme-light .update-modal-body {
+  color: #374151 !important;
+}
+
+body.theme-light .update-modal-footer {
+  background: #f9fafb !important;
+  border-top-color: #e5e7eb !important;
+}
+
+body.theme-light #update-progress-container {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+}
+
+body.theme-light .tarkov-progress-bar-bg {
+  background: #e5e7eb !important;
+}
+
+/* ==========================================================================
+   PZHUB DESKTOP v2.0 - RESPONSIVE TACTICAL SUITE & STEAM LAUNCHER
+   ========================================================================== */
+
+/* 1. CLUSTER ESQUERDO & LAUNCHER WIDGET */
+.nav-left-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ========================================================================= */
+/* HERO PLAY WIDGET - PREDOMINANTE & EYE-CATCHING (HERO ACTION PRIMÁRIA)     */
+/* ========================================================================= */
+.tactical-play-widget.hero-play-widget {
+  display: flex;
+  align-items: stretch;
+  height: 32px;
+  background: rgba(7, 12, 16, 0.92);
+  border: 1px solid rgba(46, 204, 113, 0.65);
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 0 0 16px rgba(46, 204, 113, 0.35), inset 0 0 8px rgba(46, 204, 113, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: playHeroAura 3.5s infinite ease-in-out;
+  margin-right: 4px;
+}
+
+@keyframes playHeroAura {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(46, 204, 113, 0.35), inset 0 0 6px rgba(46, 204, 113, 0.15);
+    border-color: rgba(46, 204, 113, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(46, 204, 113, 0.7), 0 0 38px rgba(46, 204, 113, 0.25), inset 0 0 10px rgba(46, 204, 113, 0.3);
+    border-color: rgba(46, 254, 143, 0.9);
+  }
+}
+
+.tactical-play-widget.hero-play-widget:hover {
+  border-color: #2ecc71;
+  box-shadow: 0 0 26px rgba(46, 204, 113, 0.8), inset 0 0 12px rgba(46, 204, 113, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-steam-play.hero-steam-play {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 50%, #1e8449 100%);
+  border: none;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 11.5px;
+  letter-spacing: 1.5px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  transition: all 0.2s ease;
+}
+
+.btn-steam-play.hero-steam-play::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-25deg);
+  animation: playLightSweep 4.5s infinite ease-in-out;
+}
+
+@keyframes playLightSweep {
+  0% { left: -100%; }
+  30%, 100% { left: 200%; }
+}
+
+.btn-steam-play.hero-steam-play:hover {
+  background: linear-gradient(135deg, #38e280 0%, #2ecc71 50%, #229954 100%);
+  color: #ffffff;
+}
+
+.btn-steam-play.hero-steam-play:active {
+  transform: scale(0.98);
+}
+
+.btn-steam-play.hero-steam-play.launching {
+  background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+  cursor: wait;
+  box-shadow: 0 0 18px rgba(230, 126, 34, 0.6);
+  border-color: #e67e22;
+}
+
+.play-icon {
+  width: 13px;
+  height: 13px;
+  fill: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  flex-shrink: 0;
+}
+
+.play-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ram-selector-dropdown {
+  position: relative;
+  display: flex;
+}
+
+.btn-ram-trigger.hero-ram-trigger {
+  background: rgba(10, 16, 22, 0.92);
+  border: none;
+  border-left: 1px solid rgba(46, 204, 113, 0.45);
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.btn-ram-trigger.hero-ram-trigger:hover {
+  background: rgba(18, 28, 38, 0.98);
+  color: #ffffff;
+  border-left-color: var(--accent-cyan);
+}
+
+.ram-chip-tag {
+  background: rgba(0, 242, 254, 0.1);
+  border: 1px solid rgba(0, 242, 254, 0.28);
+  color: var(--accent-cyan);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 9.5px;
+  letter-spacing: 0.5px;
+}
+
+.chevron-icon {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  opacity: 0.8;
+  transition: transform var(--transition-fast);
+}
+
+.btn-ram-trigger:hover .chevron-icon {
+  opacity: 1;
+}
+
+/* DROPDOWN MENU TÁTICO */
+.tarkov-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: rgba(12, 18, 28, 0.96);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  min-width: 180px;
+  z-index: 3000;
+  padding: 6px;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tarkov-dropdown-menu.open {
+  display: flex;
+  animation: tarkovDropdownIn 0.15s ease-out forwards;
+}
+
+@keyframes tarkovDropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 4px;
+}
+
+.ram-option {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  text-align: left;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.ram-option span {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.ram-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-amber);
+}
+
+.ram-option.active {
+  background: rgba(46, 204, 113, 0.18);
+  color: var(--accent-emerald);
+  border-left: 2px solid var(--accent-emerald);
+}
+
+/* 2. ABAS RESPONSIVAS */
+.tab-label-short {
+  display: none;
+}
+
+/* 3. PERFIL DE USUÁRIO SUPABASE */
+.user-profile-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tarkov-btn-auth {
+  background: rgba(229, 142, 38, 0.12);
+  border: 1px solid var(--accent-amber);
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tarkov-btn-auth svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.tarkov-btn-auth:hover {
+  background: rgba(229, 142, 38, 0.25);
+  box-shadow: 0 0 10px var(--accent-amber-glow);
+  color: #fff;
+}
+
+.operator-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 8px 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition-fast);
+}
+
+.operator-badge-container:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-cyan);
+}
+
+.operator-badge-container.hidden {
+  display: none !important;
+}
+
+.operator-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-cyan);
+  object-fit: cover;
+}
+
+.operator-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.operator-name {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operator-status-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--accent-emerald);
+}
+
+.user-menu-dropdown {
+  right: 0;
+  min-width: 200px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.dropdown-item svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-item.sync-info {
+  color: var(--accent-emerald);
+  cursor: default;
+}
+
+.dropdown-item.item-danger {
+  color: var(--accent-red);
+}
+
+.dropdown-item.item-danger:hover {
+  background: rgba(255, 71, 87, 0.15);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 0;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 4. TACTICAL RADAR HEADER RESPONSIVO */
+.back-text-short {
+  display: none;
+}
+
+.telemetry-readout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  flex-wrap: nowrap;
+}
+
+.telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  white-space: nowrap;
+}
+
+.opacity-popover-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.opacity-slider-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ========================================================================= */
+/* 5. MODAIS TÁTICOS GLOBAIS & AUTENTICAÇÃO (TARKOV LIQUID GLASS OVERLAY)    */
+/* ========================================================================= */
+.tarkov-modal-backdrop, .tactical-modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 8, 12, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.tarkov-modal-backdrop.visible, .tactical-modal-overlay.visible {
+  display: flex !important;
+}
+
+.tarkov-modal-card {
+  background: #0d1218;
+  border: 1px solid var(--accent-amber);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 24px var(--accent-amber-glow);
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-sm);
+  animation: modalScale 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 100000;
+}
+
+@keyframes modalScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header, .modal-card-header {
+  background: rgba(229, 142, 38, 0.1);
+  border-bottom: 1px solid rgba(229, 142, 38, 0.3);
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+.modal-close-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: var(--transition-fast);
+}
+
+.modal-close-icon:hover {
+  color: var(--accent-red);
+}
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.auth-modal-card {
+  max-width: 460px;
+}
+
+.auth-modal-body {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-sync-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(46, 204, 113, 0.08);
+  border: 1px solid rgba(46, 204, 113, 0.28);
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+
+.auth-sync-banner .banner-icon {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.auth-sync-banner strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-emerald);
+}
+
+.auth-sync-banner p {
+  margin: 2px 0 0 0;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.auth-status-message {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  min-height: 16px;
+}
+
+.auth-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.auth-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  padding: 4px;
+  transition: color var(--transition-fast);
+}
+
+.auth-toggle-btn:hover {
+  color: var(--accent-amber);
+  text-decoration: underline;
+}
+
+/* 6. TOAST MILITAR FLUTUANTE */
+.tarkov-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(12, 18, 26, 0.96);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--accent-emerald);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 10px 18px;
+  border-radius: 4px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: all 0.25s ease-out;
+}
+
+.tarkov-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tarkov-toast.error {
+  border-color: var(--accent-red);
+  color: #ff6b81;
+}
+
+/* ==========================================================================
+   BREAKPOINTS RESPONSIVOS DE ALTA PRECISÃO (ANTI-SQUISH)
+   ========================================================================== */
+
+/* TELAS MÉDIAS / LAPTOP (< 1280px) */
+@media (max-width: 1279px) {
+  .tab-label {
+    display: none;
+  }
+  .tab-label-short {
+    display: inline-block;
+  }
+  .telemetry-item.item-cell {
+    display: none;
+  }
+  .brand-sub {
+    display: none;
+  }
+}
+
+/* TELAS COMPACTAS / COLUNA (< 992px) */
+@media (max-width: 991px) {
+  .tarkov-top-bar {
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .tactical-play-widget .play-text,
+  .hero-play-widget .play-text {
+    display: none;
+  }
+  .btn-steam-play,
+  .btn-steam-play.hero-steam-play {
+    padding: 0 10px;
+    font-size: 10px;
+  }
+  .btn-ram-trigger.hero-ram-trigger {
+    padding: 0 6px;
+  }
+  .ram-chip-tag {
+    font-size: 9px;
+    padding: 1px 3px;
+  }
+  .tab-label-short {
+    display: none;
+  }
+  .tarkov-tab {
+    padding: 0 8px;
+  }
+  .operator-info {
+    display: none;
+  }
+  .auth-btn-label {
+    display: none;
+  }
+  .tarkov-btn-auth {
+    padding: 4px 6px;
+  }
+
+  /* Radar Header: Trava estrita de altura e nunca quebra linha */
+  .tactical-header {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    flex-wrap: nowrap !important;
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .header-left, .header-center, .header-right {
+    gap: 6px;
+  }
+  .back-text-full {
+    display: none;
+  }
+  .back-text-short {
+    display: inline-block;
+  }
+  .tactical-btn-label {
+    display: none;
+  }
+  .tactical-btn {
+    padding: 6px 8px;
+  }
+  .telemetry-item.item-zoom,
+  .telemetry-item.item-cell {
+    display: none;
+  }
+  .tactical-dock {
+    left: auto;
+    right: 14px;
+    transform: none;
+  }
+}
+
+/* TELAS ULTRA-ESTREITAS / SPLIT SCREEN (< 768px) */
+@media (max-width: 767px) {
+  .lang-selector-group {
+    display: none;
+  }
+  .nav-divider {
+    display: none;
+  }
+  .tarkov-stat-item {
+    display: none;
+  }
+  .tactical-header {
+    height: 44px !important;
+    flex-wrap: nowrap !important;
+  }
+  .header-center {
+    display: none;
+  }
+  .opacity-slider-box .opacity-label {
+    display: none;
+  }
+  .opacity-slider-box input[type="range"] {
+    width: 50px;
+  }
+  .tactical-sidebar {
+    width: 290px;
+  }
+  .tactical-sidebar.collapsed {
+    transform: translateX(-302px);
+  }
+}
+
+/* ==========================================================================
+   PAINEL SOCIAL & LISTA DE AMIGOS ESTILO RIOT CLIENT (DARK LIQUID GLASS)
+   ========================================================================== */
+.riot-social-pane {
+  display: none;
+}
+
+.tab-pane.active.riot-social-pane,
+.riot-social-pane.active {
+  display: flex !important;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  height: auto;
+}
+
+/* 1. Perfil do Operador (Header Superior) */
+.riot-user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  gap: 10px;
+}
+
+.riot-avatar-cluster {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.riot-my-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #151d28;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+}
+
+.riot-status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #0c1118;
+  background: #64748b;
+}
+
+.riot-status-indicator.online {
+  background: #2ecc71;
+  box-shadow: 0 0 8px #2ecc71;
+}
+
+.riot-user-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.riot-user-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.riot-user-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #2ecc71;
+  font-family: var(--font-mono);
+}
+
+.riot-sub-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2ecc71;
+  display: inline-block;
+}
+
+.riot-btn-add-action {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.riot-btn-add-action svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.riot-btn-add-action:hover,
+.riot-btn-add-action.active {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: #2ecc71;
+  color: #2ecc71;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+}
+
+/* 2. Sub-Toolbar de Navegação (Estilo Riot Tabs) */
+.riot-nav-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.riot-toolbar-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.riot-toolbar-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.riot-toolbar-btn:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.riot-toolbar-btn.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.riot-toolbar-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--accent-amber);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 8px var(--accent-amber);
+}
+
+.riot-pill-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-family: var(--font-mono);
+}
+
+.riot-pill-badge.live {
+  background: rgba(0, 210, 211, 0.2);
+  color: #00d2d3;
+  border: 1px solid rgba(0, 210, 211, 0.3);
+}
+
+/* 3. Barra de Pesquisa Rápida */
+.riot-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.riot-search-icon {
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  fill: #64748b;
+  pointer-events: none;
+}
+
+.riot-search-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 0 32px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: 11px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.riot-search-input:focus {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 10px rgba(229, 142, 38, 0.25);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.riot-search-clear-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.riot-search-clear-btn:hover {
+  color: #fff;
+}
+
+/* 4. Gaveta Retrátil de Adicionar Amigo */
+.riot-add-drawer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.25s ease;
+  margin-bottom: 0;
+  background: rgba(14, 20, 29, 0.96);
+  border: 1px solid rgba(229, 142, 38, 0.35);
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.riot-add-drawer.open {
+  max-height: 320px;
+  opacity: 1;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+}
+
+.riot-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 6px;
+}
+
+.drawer-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-amber);
+  letter-spacing: 1px;
+}
+
+.drawer-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.drawer-close-btn:hover {
+  color: #fff;
+}
+
+.riot-drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.riot-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.riot-field-wrap .form-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.tarkov-input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #f1f5f9;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tarkov-input:focus {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 6px rgba(229, 142, 38, 0.3);
+}
+
+.riot-swatches-grid {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.swatch-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--c);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.swatch-btn:hover {
+  transform: scale(1.15);
+}
+
+.swatch-btn.active {
+  transform: scale(1.25);
+  border-color: #ffffff;
+  box-shadow: 0 0 10px var(--c);
+}
+
+.tarkov-btn-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  padding: 7px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tarkov-btn-action.action-primary {
+  background: rgba(46, 204, 113, 0.18);
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+
+.tarkov-btn-action.action-primary:hover {
+  background: #2ecc71;
+  color: #000;
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
+}
+
+/* 5. Subtab Views & Agrupamento */
+.riot-subtab-view {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.riot-group-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.riot-group-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+.riot-group-heading.collapsible {
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.riot-group-heading.collapsible:hover {
+  color: #e2e8f0;
+}
+
+.group-title {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.group-counter {
+  font-size: 11px;
+  color: #64748b;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.accordion-chevron {
+  width: 14px;
+  height: 14px;
+  fill: #64748b;
+  transition: transform 0.2s ease;
+}
+
+.riot-group-heading.collapsible.collapsed .accordion-chevron {
+  transform: rotate(-90deg);
+}
+
+.riot-friends-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.riot-friends-group-list.collapsed {
+  display: none;
+}
+
+/* 6. Linha de Amigo / Card Estilo Riot Client */
+.riot-friend-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  border: 1px solid transparent;
+  gap: 8px;
+}
+
+.riot-friend-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.friend-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.friend-avatar-wrap {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.friend-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #17202c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: #cbd5e1;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+}
+
+.friend-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.friend-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.friend-dot-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid #0c1118;
+}
+
+.friend-dot-status.online {
+  background: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.friend-dot-status.desktop {
+  background: var(--accent-cyan, #00d2d3);
+  box-shadow: 0 0 6px rgba(0, 210, 211, 0.8);
+}
+
+.friend-dot-status.offline {
+  background: #475569;
+}
+
+.friend-info-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.friend-title-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.friend-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-tactical-star {
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.friend-status-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+}
+
+.friend-status-line.online {
+  color: #2ecc71;
+}
+
+.friend-dist-pill {
+  color: #ffdd59;
+  font-weight: 700;
+}
+
+/* Botões de Ação na Linha do Amigo (Revelados no Hover) */
+.friend-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.riot-friend-row:hover .friend-row-actions {
+  opacity: 1;
+}
+
+.friend-action-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.friend-action-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.friend-action-btn.gps:hover {
+  background: rgba(0, 210, 211, 0.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(0, 210, 211, 0.4);
+}
+
+.friend-action-btn.remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+.riot-empty-state {
+  text-align: center;
+  padding: 24px 10px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+
+

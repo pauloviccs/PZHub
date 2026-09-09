@@ -327,11 +327,19 @@ export function showTacticalVersionModal({ status = 'uptodate', manifest = null,
     }
   }
 
+  modal.classList.add('visible');
   modal.classList.add('active');
 
-  const closeModal = () => modal.classList.remove('active');
+  const closeModal = () => {
+    modal.classList.remove('visible');
+    modal.classList.remove('active');
+  };
+
   if (btnClose) btnClose.onclick = closeModal;
   if (btnConfirm) btnConfirm.onclick = closeModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
   if (btnRecheck) {
     btnRecheck.onclick = () => checkForAppUpdates(null, true);
   }
@@ -460,15 +468,18 @@ export async function checkForAppUpdates(customUrl = null, isManualCheck = false
     if (hasUpdate) {
       // Fecha o modal de versão se estiver aberto e exibe o modal de update
       const versionModal = document.getElementById('tactical-version-modal');
-      if (versionModal) versionModal.classList.remove('active');
+      if (versionModal) {
+        versionModal.classList.remove('visible');
+        versionModal.classList.remove('active');
+      }
 
       showUpdateModal(manifest);
       showTacticalToast({
         title: 'ATUALIZAÇÃO DETECTADA',
         message: `PZHub Tactical Patch v${manifest.version} está disponível para instalação.`,
         type: 'success',
-        duration: 7000,
-        actionLabel: 'VER NOTAS',
+        duration: 8000,
+        actionLabel: 'INSTALAR AGORA',
         onAction: () => showUpdateModal(manifest)
       });
 
@@ -577,7 +588,20 @@ export function showUpdateModal(manifest) {
   }
   if (fallbackDownloadLink) fallbackDownloadLink.style.display = 'none';
 
+  modal.classList.add('visible');
   modal.classList.add('active');
+
+  const closeModal = () => {
+    modal.classList.remove('visible');
+    modal.classList.remove('active');
+  };
+
+  const btnCloseHeader = document.getElementById('update-modal-close');
+  if (btnCloseHeader) btnCloseHeader.onclick = closeModal;
+  if (btnLater) btnLater.onclick = closeModal;
+  modal.onclick = (e) => {
+    if (e.target === modal && !manifest.mandatory) closeModal();
+  };
 
   // Configura ação de download e instalação
   if (btnStart) {
@@ -589,27 +613,38 @@ export function showUpdateModal(manifest) {
       `;
 
       if (progressContainer) progressContainer.style.display = 'block';
-      if (statusMsg) statusMsg.textContent = 'Conectando ao servidor e iniciando streaming do instalador...';
+      if (statusMsg) statusMsg.textContent = 'Conectando ao release oficial no GitHub e iniciando download...';
 
       let unlisten = null;
       if (window.__TAURI__?.event?.listen) {
-        unlisten = await window.__TAURI__.event.listen('updater-progress', (event) => {
-          const payload = event.payload || {};
-          const pct = Math.min(100, Math.max(0, payload.percentage || 0));
-          const downMB = ((payload.downloaded_bytes || 0) / (1024 * 1024)).toFixed(1);
-          const totalMB = ((payload.total_bytes || 0) / (1024 * 1024)).toFixed(1);
+        try {
+          unlisten = await window.__TAURI__.event.listen('updater-progress', (event) => {
+            const payload = event.payload || {};
+            const pct = Math.min(100, Math.max(0, payload.percentage || 0));
+            const downMB = ((payload.downloaded_bytes || 0) / (1024 * 1024)).toFixed(1);
+            const totalMB = ((payload.total_bytes || 0) / (1024 * 1024)).toFixed(1);
 
-          if (progressFill) progressFill.style.width = `${pct}%`;
-          if (progressText) progressText.textContent = `${downMB} MB / ${totalMB} MB (${pct.toFixed(0)}%)`;
-          if (statusMsg) {
-            statusMsg.textContent = pct >= 100 
-              ? 'Download concluído! Iniciando instalador e reiniciando PZHub...'
-              : `Baixando pacote oficial... ${pct.toFixed(0)}%`;
-          }
-        });
+            if (progressFill) progressFill.style.width = `${pct}%`;
+            if (progressText) {
+              if (payload.total_bytes > 0) {
+                progressText.textContent = `${downMB} MB / ${totalMB} MB (${pct.toFixed(0)}%)`;
+              } else {
+                progressText.textContent = `${downMB} MB baixados...`;
+              }
+            }
+            if (statusMsg) {
+              statusMsg.textContent = pct >= 100 
+                ? 'Download 100% concluído! Executando instalador e reiniciando PZHub...'
+                : `Baixando pacote oficial... ${pct.toFixed(0)}% (${downMB} MB)`;
+            }
+          });
+        } catch (listenErr) {
+          console.warn('[Updater] Não foi possível registrar listener de progresso:', listenErr);
+        }
       }
 
       try {
+        console.log('[Updater] Invocando download_and_run_installer com URL:', manifest.url);
         if (window.__TAURI__?.core?.invoke) {
           await window.__TAURI__.core.invoke('download_and_run_installer', {
             installerUrl: manifest.url
@@ -619,24 +654,34 @@ export function showUpdateModal(manifest) {
         }
       } catch (err) {
         console.error('[Updater] Erro ao aplicar atualização:', err);
-        if (statusMsg) statusMsg.textContent = `Erro durante o update: ${err}`;
+        const errText = err?.message || String(err);
+        if (statusMsg) statusMsg.textContent = `Erro durante o update: ${errText}`;
         btnStart.disabled = false;
-        btnStart.textContent = 'TENTAR NOVAMENTE';
+        btnStart.innerHTML = `
+          <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+          <span>TENTAR NOVAMENTE</span>
+        `;
 
-        // Mostra link de fallback para o usuário não ficar na mão
+        // Mostra link de fallback para o usuário poder baixar diretamente
         if (fallbackDownloadLink && manifest.url) {
           fallbackDownloadLink.style.display = 'block';
           fallbackDownloadLink.href = manifest.url;
+          fallbackDownloadLink.onclick = async (e) => {
+            e.preventDefault();
+            try {
+              if (window.__TAURI__?.core?.invoke) {
+                await window.__TAURI__.core.invoke('plugin:opener|open_url', { path: manifest.url });
+              } else {
+                window.open(manifest.url, '_blank');
+              }
+            } catch (_) {
+              window.open(manifest.url, '_blank');
+            }
+          };
         }
       } finally {
         if (unlisten) unlisten();
       }
-    };
-  }
-
-  if (btnLater) {
-    btnLater.onclick = () => {
-      modal.classList.remove('active');
     };
   }
 }

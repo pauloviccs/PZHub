@@ -1743,8 +1743,9 @@ body.mini-radar-active #gps-navigation-hud {
   padding: 20px;
 }
 
-.tactical-modal-overlay.visible {
-  display: flex;
+.tactical-modal-overlay.visible,
+.tactical-modal-overlay.active {
+  display: flex !important;
 }
 
 .tarkov-modal-card {
@@ -3820,7 +3821,10 @@ body.theme-light .tarkov-progress-bar-bg {
   box-sizing: border-box;
 }
 
-.tarkov-modal-backdrop.visible, .tactical-modal-overlay.visible {
+.tarkov-modal-backdrop.visible,
+.tactical-modal-overlay.visible,
+.tarkov-modal-backdrop.active,
+.tactical-modal-overlay.active {
   display: flex !important;
 }
 

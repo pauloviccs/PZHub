@@ -142,7 +142,15 @@ pub async fn download_and_run_installer(
     installer_url: String,
 ) -> Result<String, String> {
     let temp_dir = std::env::temp_dir();
-    let installer_path: PathBuf = temp_dir.join("PZHub_Update_Setup.exe");
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let installer_path: PathBuf = temp_dir.join(format!("PZHub_Update_Setup_{}.exe", timestamp));
+
+    if installer_path.exists() {
+        let _ = std::fs::remove_file(&installer_path);
+    }
 
     let direct_url = normalize_installer_url(&installer_url);
 
@@ -199,22 +207,48 @@ pub async fn download_and_run_installer(
     file.flush().map_err(|e| format!("Erro ao finalizar gravação do arquivo: {}", e))?;
     drop(file); // Garante fechamento do handle do arquivo antes de executar
 
-    // Dispara o instalador NSIS desanexado do processo
+    // Dispara o instalador NSIS desanexado do processo com suporte a elevação UAC no Windows
     #[cfg(target_os = "windows")]
     {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NEW_PROCESS_GROUP: u32 = 0x00000200;
-        const DETACHED_PROCESS: u32 = 0x00000008;
+        let installer_str = installer_path.to_string_lossy().to_string();
 
-        let mut cmd = std::process::Command::new(&installer_path);
-        cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS);
+        // Método 1: Disparo via ShellExecute através do 'cmd /C start "" "path"'
+        // O comando 'start' delega para a Shell do Windows, permitindo o prompt UAC de elevação do NSIS
+        let spawn_res = std::process::Command::new("cmd")
+            .args(["/C", "start", "", &installer_str])
+            .spawn();
 
-        cmd.spawn()
-            .map_err(|e| format!("Falha ao iniciar o instalador: {}", e))?;
+        let launched = match spawn_res {
+            Ok(_) => true,
+            Err(e) => {
+                eprintln!("[PZHub Native Updater] Falha no cmd /C start: {}. Tentando fallback PowerShell...", e);
+                // Método 2: Fallback via PowerShell com -Verb RunAs (garante elevação administrativa)
+                let ps_res = std::process::Command::new("powershell")
+                    .args([
+                        "-NoProfile",
+                        "-WindowStyle", "Hidden",
+                        "-Command",
+                        &format!("Start-Process -FilePath '{}' -Verb RunAs", installer_str.replace('\'', "''"))
+                    ])
+                    .spawn();
 
-        // Aguarda 400ms para o processo do instalador engatar e fecha o PZHub antigo
-        tokio::time::sleep(Duration::from_millis(400)).await;
-        std::process::exit(0);
+                match ps_res {
+                    Ok(_) => true,
+                    Err(ps_err) => {
+                        return Err(format!("Falha ao iniciar o instalador (cmd: {}, ps: {})", e, ps_err));
+                    }
+                }
+            }
+        };
+
+        if launched {
+            // Aguarda 1 segundo para garantir que o processo do instalador foi criado pela shell
+            tokio::time::sleep(Duration::from_millis(1000)).await;
+            // Encerra o PZHub antigo para liberar arquivos bloqueados para a instalação
+            std::process::exit(0);
+        }
+
+        Ok("Instalador disparado com sucesso.".into())
     }
 
     #[cfg(not(target_os = "windows"))]

@@ -1,7 +1,7 @@
 {
   "version": "2.2.1",
   "name": "PZHub Tactical Patch v2.2.1",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.1/PZHub_2.2.1_x64_en-US.msi",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.1/PZHub_2.2.1_x64-setup.exe",
   "notes": "### PZHub Tactical Patch v2.2.1\n\n- **Privacidade Total no Chat:** Isolamento definitivo de conversas em tabela própria (`direct_messages`), eliminando qualquer vazamento para o mural público.\n- **Sincronização Dinâmica de Presença:** Correção do status offline. Amigos online são detectados em tempo real e sobem dinamicamente para o topo da lista.\n- **Notificação Acústica Tática:** Som suave e cristalino via Web Audio API a cada nova mensagem recebida no chat.\n- **Interface Limpa:** Remoção de dados estáticos falsos no cabeçalho social.",
   "pub_date": "2026-09-09T17:00:00Z",
   "mandatory": false

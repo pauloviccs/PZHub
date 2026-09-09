@@ -5,6 +5,40 @@
 
 ---
 
+## 📻 Atualização 2.2.0 — "Frequência Aberta: O Painel Social Tático"
+*Data da Transmissão: 09 de Setembro de 2026*
+
+### 🎙️ Palavra dos Devs
+> Lembra quando você precisava abrir o mapa, pausar o looting e rezar para nenhum zumbi te morder só para saber se aquele seu amigo atirador estava online? Acabou o perrengue.  
+> Na **Atualização 2.2.0**, nós trouxemos uma experiência social de elite, inspirada 1:1 no **Riot Client**, mas com o coração batendo diretamente no banco de dados oficial do ecossistema PZHub.  
+> Agora o seu comunicador tático fica no cinto, acessível de qualquer lugar, com chat direto flutuante em tempo real e conexões com pessoas reais que jogam com você!
+
+---
+
+### 🛡️ Destaques da Versão
+
+#### 🪟 1. Gaveta Social Global Estilo Riot Client (`#riot-social-drawer`)
+- **Acesso Onipresente:** Um novo botão tático de pelotão na barra superior (`Topbar`) permite abrir e fechar a gaveta lateral em qualquer tela do app (Hub de Operações, Gerenciador de Modpacks, Scanner Local ou Radar do Mapa).
+- **Design Fosco de Alta Fidelidade:** Acabamento em preto carvão fosco (`#121316`), iluminação suave nas bordas e atalho rápido na tecla `ESC` para recolher instantaneamente.
+- **Header de Identidade:** Seu avatar oficial e seu nome de operador sincronizados diretamente com a sua conta do website.
+
+#### 🎛️ 2. Navegação Segmentada em 3 Abas Táticas
+- **Aba 1 (Sobreviventes & Amigos):** Lista limpa agrupada por status ativo (`☣️ PROJECT ZOMBOID` com indicador verde neon pulsante) e sanfona retrátil de aliados `Offline` com contadores em tempo real.
+- **Aba 2 (Mensagens & Transmissões):** Canal direto de conversas recentes com o clássico Empty State da Riot (*"Tudo pronto para conversar? Envie uma mensagem para começar."*).
+- **Aba 3 (Solicitações & Conexões com Badge Vermelho):** Notificador em pílula vermelha viva indicando pedidos pendentes, campos para adicionar amigos por `Nome` + `#Tagline` e ações rápidas de Aceitar (`✓`) e Dispensar (`✕`).
+
+#### 💬 3. Janela Flutuante de Chat em Tempo Real (`Direct Message`)
+- **Comunicação Sem Fricção:** Clicou em qualquer operador na lista? Um pop-up escuro e elegante surge no canto inferior direito para você combinar táticas na hora.
+- **Aviso de Privacidade Estilo Riot:** Banner oficial informando que o histórico é salvo e lembrando que administradores nunca solicitarão sua senha.
+- **Envio com `Enter` & WebSockets:** Mensagens trafegam em milissegundos através do canal Supabase Realtime Broadcast, com balões personalizados para envio e recebimento com timestamps automáticos.
+
+#### 🌐 4. Conexão com Dados 100% Reais do Supabase (`VICCS_PZHub_Website`)
+- **Fim dos Usuários Fictícios:** Adeus dados estáticos! A lista agora consulta diretamente a tabela `public.profiles` e as conexões de `public.follows`.
+- **Comunidade Viva:** Quem cria conta no website do PZHub aparece instantaneamente no desktop, com foto de perfil, apelido oficial e tags de papel (`CRIADOR`, `ADMIN`, `B42`).
+- **Mural de Recados Persistido:** As mensagens trocadas são gravadas de forma estruturada na nuvem (`public.profile_scraps`), garantindo que seu histórico não evapore ao fechar o app.
+
+---
+
 ## 🛰️ Atualização 2.1.1 — "O Fim do Silêncio no Rádio"
 *Data da Transmissão: 08 de Setembro de 2026*
 

@@ -1,7 +1,7 @@
 {
   "version": "2.2.0",
   "name": "PZHub Riot Social Update v2.2.0",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/Updates/PZHub_2.2.0_x64-setup.exe",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/DesktopApp/PZHub_2.2.0_x64_en-US.msi",
   "notes": "### PZHub Riot Social Update v2.2.1\n\n- **Painel Social Estilo Riot Client:** Gaveta lateral global onipresente (`#riot-social-drawer`) com 3 abas segmentadas (Amigos, Chat e Solicitações de Amizade).\n- **Janela Flutuante de Chat em Tempo Real:** Pop-up com aviso de 30 dias de histórico, envio instantâneo no Enter e transmissão via Supabase Realtime Channels.\n- **Gestão de Solicitações:** Busca por Nome + Tagline e aprovação/rejeição rápida com Toasts Táticos.\n- **Status Dinâmico:** Destaque para jogadores ativos em Project Zomboid com ícone de monitor de PC.",
   "pub_date": "2026-09-09T03:00:00Z",
   "mandatory": false

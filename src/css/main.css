@@ -5145,6 +5145,914 @@ body.theme-light .tarkov-progress-bar-bg {
   to { transform: rotate(360deg); }
 }
 
+/* ========================================================================= */
+/* RIOT CLIENT SOCIAL DRAWER & FLOATING DIRECT MESSAGE POPUP (1:1 FIDELITY)  */
+/* ========================================================================= */
 
+/* Botão de Toggle na Topbar */
+.riot-social-toggle-btn {
+  position: relative;
+}
 
+.riot-topbar-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #eb0029;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(235, 0, 41, 0.6);
+}
 
+/* GAVETA SOCIAL GLOBAL */
+.riot-social-drawer {
+  position: fixed;
+  top: 42px;
+  right: -320px;
+  bottom: 0;
+  width: 300px;
+  background: #121316;
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  transition: right 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s;
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+.riot-social-drawer.open {
+  right: 0;
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.75);
+}
+
+/* Header do Usuário */
+.riot-drawer-user-header {
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.riot-drawer-user-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.riot-user-avatar-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
+.riot-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1c1d22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.riot-drawer-username {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.riot-drawer-user-status {
+  font-size: 11.5px;
+  color: #858890;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.riot-btn-icon-collapse {
+  background: transparent;
+  border: none;
+  color: #858890;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.riot-btn-icon-collapse:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.riot-btn-icon-collapse svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Status Dots */
+.riot-status-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #121316;
+}
+
+.riot-status-dot.online {
+  background: #00f076;
+}
+
+.riot-status-dot.in-game {
+  background: #00f076;
+  box-shadow: 0 0 6px #00f076;
+}
+
+.riot-status-dot.offline {
+  background: transparent;
+  border: 2px solid #5a5d66;
+}
+
+/* Segmented Tabs (3 Pílulas) */
+.riot-segmented-tabs-wrapper {
+  padding: 0 16px 12px;
+}
+
+.riot-segmented-pill {
+  background: #1c1d22;
+  border-radius: 20px;
+  display: flex;
+  position: relative;
+  padding: 3px;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.riot-seg-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #858890;
+  transition: color 0.18s;
+  position: relative;
+  z-index: 2;
+  border-radius: 18px;
+}
+
+.riot-seg-tab:hover {
+  color: #e0e1e6;
+}
+
+.riot-seg-tab.active {
+  color: #ffffff;
+}
+
+.riot-seg-tab svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.riot-seg-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: calc(50% - 12px);
+  width: 24px;
+  height: 2px;
+  background: #eb0029;
+  border-radius: 2px;
+}
+
+.riot-tab-badge {
+  position: absolute;
+  top: 1px;
+  right: 10px;
+  background: #eb0029;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(235, 0, 41, 0.5);
+}
+
+.riot-seg-indicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  display: none;
+}
+
+/* Search Box */
+.riot-drawer-search-wrap {
+  padding: 0 16px 12px;
+}
+
+.riot-drawer-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.riot-search-ico {
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  fill: #686a73;
+  pointer-events: none;
+}
+
+.riot-drawer-search-box input {
+  width: 100%;
+  background: #1a1b20;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 7px 28px 7px 32px;
+  color: #f0f1f3;
+  font-size: 12.5px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.riot-drawer-search-box input:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #1e1f25;
+}
+
+.riot-search-clear {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #858890;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px;
+}
+
+/* Tab Contents */
+.riot-tab-contents {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.riot-tab-pane {
+  display: none;
+  flex-direction: column;
+}
+
+.riot-tab-pane.active {
+  display: flex;
+}
+
+/* Seções de Grupo (Ex: PROJECT ZOMBOID, OFFLINE) */
+.riot-section-header {
+  padding: 10px 16px 6px;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #858890;
+  text-transform: uppercase;
+  gap: 6px;
+}
+
+.riot-section-header.clickable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.riot-section-header.clickable:hover {
+  color: #ffffff;
+}
+
+.riot-game-icon {
+  font-size: 10px;
+  color: #eb0029;
+}
+
+.riot-section-title {
+  flex: 1;
+}
+
+.riot-section-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #686a73;
+}
+
+.riot-chevron {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  transition: transform 0.2s;
+}
+
+.riot-section-header.collapsed .riot-chevron {
+  transform: rotate(-90deg);
+}
+
+.riot-friends-group-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.riot-friends-empty-sub {
+  padding: 6px 16px 10px;
+  font-size: 11px;
+  color: #686a73;
+  font-style: italic;
+}
+
+/* Linha de Amigo */
+.riot-friend-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 16px;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.riot-friend-row:hover {
+  background: #1a1b20;
+}
+
+.riot-friend-avatar-cluster {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.riot-friend-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1c1d22;
+}
+
+.riot-friend-avatar-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #252830;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.riot-friend-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.riot-friend-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f0f1f3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.riot-friend-status-text {
+  font-size: 11px;
+  color: #858890;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.riot-sub-desktop-ico {
+  width: 12px;
+  height: 12px;
+  fill: #858890;
+}
+
+/* ABA 2: CHATS */
+.riot-chat-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.riot-empty-chat-icon {
+  width: 54px;
+  height: 54px;
+  fill: #f0f1f3;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.riot-empty-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.riot-empty-subtitle {
+  font-size: 12.5px;
+  color: #858890;
+  margin: 0;
+}
+
+.riot-conversations-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.riot-conversation-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+}
+
+.riot-conversation-row:hover {
+  background: #1a1b20;
+}
+
+.riot-convo-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.riot-convo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.riot-convo-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.riot-convo-time {
+  font-size: 10px;
+  color: #686a73;
+}
+
+.riot-convo-preview {
+  font-size: 11.5px;
+  color: #858890;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* ABA 3: SOLICITAÇÕES */
+.riot-add-friend-form {
+  padding: 0 16px 16px;
+}
+
+.riot-add-inputs-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.riot-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.riot-input-group svg {
+  position: absolute;
+  left: 8px;
+  width: 14px;
+  height: 14px;
+  fill: #686a73;
+}
+
+.riot-input-group input {
+  width: 100%;
+  background: #1a1b20;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 7px 10px 7px 28px;
+  color: #ffffff;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.riot-input-group.tagline input {
+  padding-left: 20px;
+}
+
+.riot-tag-prefix {
+  position: absolute;
+  left: 8px;
+  color: #686a73;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.riot-btn-add-submit {
+  width: 100%;
+  background: #252830;
+  color: #858890;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.riot-btn-add-submit:not(:disabled) {
+  background: #eb0029;
+  color: #ffffff;
+}
+
+.riot-btn-add-submit:not(:disabled):hover {
+  background: #ff1a40;
+  box-shadow: 0 0 10px rgba(235, 0, 41, 0.4);
+}
+
+.riot-requests-section-header {
+  padding: 10px 16px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+  color: #858890;
+  text-transform: uppercase;
+}
+
+.riot-requests-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.riot-request-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.riot-request-avatar-wrap {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.riot-request-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.riot-request-username {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.riot-request-tag {
+  font-size: 11px;
+  color: #858890;
+  margin-top: 1px;
+}
+
+.riot-request-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.riot-req-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #252830;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.riot-req-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.riot-req-btn.btn-accept:hover {
+  background: #2ecc71;
+  color: #000;
+}
+
+.riot-req-btn.btn-decline:hover {
+  background: #eb0029;
+}
+
+.riot-requests-empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: #686a73;
+  font-size: 12px;
+}
+
+/* ========================================================================= */
+/* JANELA FLUTUANTE DE CHAT (1:1 COM IMAGEM 5 DA RIOT)                      */
+/* ========================================================================= */
+.riot-chat-popup-window {
+  position: fixed;
+  bottom: 24px;
+  right: 316px;
+  width: 310px;
+  height: 430px;
+  background: #18191d;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  animation: slideUpFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.riot-chat-header {
+  padding: 12px 14px;
+  background: #151619;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.riot-chat-header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.riot-chat-avatar-wrap {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+
+.riot-chat-avatar-wrap img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1c1d22;
+}
+
+.riot-chat-friend-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.riot-chat-friend-sub {
+  font-size: 11px;
+  color: #858890;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.riot-desktop-ico {
+  width: 12px;
+  height: 12px;
+  fill: #858890;
+}
+
+.riot-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.riot-chat-action-btn {
+  background: transparent;
+  border: none;
+  color: #858890;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.riot-chat-action-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.riot-chat-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #18191d;
+}
+
+.riot-chat-disclaimer {
+  padding: 16px 20px 12px;
+  text-align: center;
+  font-size: 11px;
+  color: #72757e;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.riot-sub-disclaimer {
+  margin-top: 6px;
+  color: #5c5f67;
+}
+
+.riot-chat-stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.riot-chat-start-hint {
+  text-align: center;
+  color: #5c5f67;
+  font-size: 11px;
+  padding: 20px 10px;
+  line-height: 1.4;
+}
+
+.riot-chat-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  max-width: 82%;
+}
+
+.riot-chat-bubble-wrap.outgoing {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.riot-chat-bubble-wrap.incoming {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.riot-chat-bubble {
+  padding: 8px 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  border-radius: 12px;
+  word-break: break-word;
+}
+
+.riot-chat-bubble-wrap.outgoing .riot-chat-bubble {
+  background: #252832;
+  color: #f0f1f3;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom-right-radius: 2px;
+}
+
+.riot-chat-bubble-wrap.incoming .riot-chat-bubble {
+  background: #1e1f25;
+  color: #f0f1f3;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom-left-radius: 2px;
+}
+
+.riot-chat-time {
+  font-size: 9.5px;
+  color: #5c5f67;
+  margin-top: 3px;
+  padding: 0 2px;
+}
+
+.riot-chat-footer {
+  padding: 8px 12px 12px;
+  background: #151619;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.riot-chat-input-pill {
+  background: #101114;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  padding: 4px 6px 4px 14px;
+  transition: border-color 0.15s;
+}
+
+.riot-chat-input-pill:focus-within {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: #141519;
+}
+
+.riot-chat-input-pill input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 12.5px;
+  outline: none;
+}
+
+.riot-chat-input-pill input::placeholder {
+  color: #5c5f67;
+}
+
+.riot-chat-send-btn {
+  background: transparent;
+  border: none;
+  color: #858890;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+
+.riot-chat-send-btn:hover {
+  color: #ffffff;
+  transform: translateX(1px);
+}
+
+.riot-chat-send-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}

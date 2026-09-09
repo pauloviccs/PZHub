@@ -69,7 +69,7 @@ pub fn normalize_manifest_url(url: &str) -> String {
 
 #[tauri::command]
 pub async fn fetch_update_manifest(manifest_url: String) -> Result<serde_json::Value, String> {
-    let clean_url = normalize_manifest_url(&manifest_url);
+    let mut clean_url = normalize_manifest_url(&manifest_url);
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
@@ -78,10 +78,30 @@ pub async fn fetch_update_manifest(manifest_url: String) -> Result<serde_json::V
         .build()
         .map_err(|e| format!("Falha ao inicializar cliente HTTP nativo: {}", e))?;
 
-    let res = client.get(&clean_url)
+    let mut res = client.get(&clean_url)
         .send()
         .await
         .map_err(|e| format!("Falha ao conectar no manifesto remoto ({}): {}", clean_url, e))?;
+
+    // Auto-fallback resiliente entre branches master e main caso uma delas retorne 404
+    if res.status().as_u16() == 404 {
+        let alt_url = if clean_url.contains("/main/") {
+            Some(clean_url.replace("/main/", "/master/"))
+        } else if clean_url.contains("/master/") {
+            Some(clean_url.replace("/master/", "/main/"))
+        } else {
+            None
+        };
+
+        if let Some(ref fallback_url) = alt_url {
+            if let Ok(alt_res) = client.get(fallback_url).send().await {
+                if alt_res.status().is_success() {
+                    res = alt_res;
+                    clean_url = fallback_url.clone();
+                }
+            }
+        }
+    }
 
     let status = res.status();
     if !status.is_success() {

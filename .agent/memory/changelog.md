@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.1] - 2026-09-08 (Auto-Updater Hardening, Master/Main Fallback, Topbar Indicator & Tactical UI)
+
+### Adicionado
+- **Migração para GitHub Raw Oficial:** Manifesto remoto apontado para `https://raw.githubusercontent.com/pauloviccs/PZHub/master/latest.json`.
+- **Auto-Fallback Resiliente de Branches:** Rust nativo e JS agora alternam dinamicamente entre `master` e `main` em caso de erro HTTP 404, garantindo disponibilidade mesmo com divergência de branch.
+- **Indicador Tático de Status na Topbar:** Badge discreto `#topbar-updater-status` com diagnóstico de erros (ex: HTTP 404, 503, JSON inválido) sem uso de `alert()` bloqueante.
+- **Card de Versão Interativo no Hero:** Elemento `#hub-updater-box` com status dinâmico e botão com ícone giratório "BUSCAR" (`#btn-hub-check-updates`).
+- **Ação no Menu de Operador:** Opção "Buscar Atualizações" adicionada ao dropdown de perfil.
+- **Modal Holográfico e Toasts Táticos:** Sistema completo de notificações visuais no padrão Tarkov / Liquid Glass (`showTacticalToast` e `#tactical-version-modal`).
+- **Notas de Versão Imersivas:** Arquivo `.agent/updates/PATCH_NOTES.md` criado em formato descontraído estilo Riot Games cobrindo todo o histórico do projeto.
+- **Compilação de Release v2.1.1:** Gerados os instaladores oficiais `PZHub_2.1.1_x64-setup.exe` (NSIS) e `PZHub_2.1.1_x64_en-US.msi`.
+
+### Corrigido
+- **Eliminação de Falhas Silenciosas no Updater:** A checagem de atualizações agora persiste logs em `localStorage` (`pzhub_last_update_check`) e emite eventos globais `updater-check-failed` e `updater-check-success`.
+- **Prevenção de Regressão de Versão:** Garantida a integridade da função `isNewerVersion()` com comparação estrita SemVer.
+
 ## [2.1.0] - 2026-09-08 (Riot Social, Supabase Auth Sync, Hero Play & Layout Hardening)
 
 ### Adicionado

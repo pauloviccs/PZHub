@@ -5,10 +5,10 @@
 
 import { parseMarkdown } from './markdown_parser.js';
 
-export const CURRENT_APP_VERSION = '2.1.1';
+export const CURRENT_APP_VERSION = '2.2.0';
 
 // Endpoint padrão do manifesto oficial no GitHub Raw
-export const DEFAULT_UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/pauloviccs/PZHub/main/latest.json';
+export const DEFAULT_UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/pauloviccs/PZHub/master/latest.json';
 
 // Estado em memória da última verificação executada
 let lastUpdateCheckState = null;
@@ -377,12 +377,28 @@ export async function checkForAppUpdates(customUrl = null, isManualCheck = false
     // Prioridade 2: Fallback via fetch padrão (para simulação no browser ou caso invoke falhe)
     if (!manifest) {
       try {
-        const res = await fetch(manifestUrl, {
+        let res = await fetch(manifestUrl, {
           cache: 'no-store',
           headers: {
             'Accept': 'application/json, text/plain, */*'
           }
         });
+
+        // Auto-fallback inteligente entre branches master e main se uma retornar 404
+        if (res.status === 404) {
+          const altUrl = manifestUrl.includes('/main/') 
+            ? manifestUrl.replace('/main/', '/master/') 
+            : (manifestUrl.includes('/master/') ? manifestUrl.replace('/master/', '/main/') : null);
+          if (altUrl) {
+            try {
+              const altRes = await fetch(altUrl, { cache: 'no-store', headers: { 'Accept': 'application/json, text/plain, */*' } });
+              if (altRes.ok) {
+                res = altRes;
+                manifestUrl = altUrl;
+              }
+            } catch (_) {}
+          }
+        }
 
         if (!res.ok) {
           throw new Error(`Servidor de atualizações retornou HTTP ${res.status} (${res.statusText || 'Falha de requisição'})`);

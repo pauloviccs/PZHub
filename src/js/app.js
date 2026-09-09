@@ -14,6 +14,7 @@ import { i18n, PZ_CATEGORIES } from './i18n.js';
 import { checkForAppUpdates, getLastUpdateCheck, updateTopbarIndicator } from './updater.js';
 import { initLauncher } from './launcher.js';
 import { initAuth } from './auth.js';
+import { initSocialManager } from './social_manager.js';
 
 class App {
   constructor() {
@@ -49,6 +50,9 @@ class App {
     // 2.1 Inicializa o Steam Game Launcher e a Autenticação Supabase
     await initLauncher();
     await initAuth();
+
+    // 2.2 Inicializa o Painel Social Global Estilo Riot Client & Chat
+    await initSocialManager();
 
     // 3. Inicializa o motor de mapa Leaflet (em segundo plano)
     this.mapEngine = new PZMapEngine('map', (telemetry) => {

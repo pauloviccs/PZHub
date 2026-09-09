@@ -1,8 +1,8 @@
 {
-  "version": "2.1.1",
-  "name": "PZHub Social Update v2.1.1",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/Updates/PZHub_2.1.1_x64-setup.exe",
-  "notes": "### PZHub Social Update v2.1.1\n\n- **Auto-Updater Robusto:** Migração do manifesto oficial para o GitHub Raw (`latest.json`) com diagnóstico de erros em tempo real.\n- **Indicador Tático na Topbar:** Alerta discreto e não-bloqueante na barra superior quando a checagem de atualização falha, com detalhamento do erro.\n- **Painel Social Riot Client:** Sincronização em tempo real de presença global com Supabase.\n- **Steam Launcher com RAM:** Alocação de memória JVM diretamente no `ProjectZomboid64.json`.\n- **Blindagem de Layout:** Header travado em 44px e isolamento de abas na Página 4.",
-  "pub_date": "2026-09-08T03:30:00Z",
+  "version": "2.2.0",
+  "name": "PZHub Riot Social Update v2.2.0",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/Updates/PZHub_2.2.0_x64-setup.exe",
+  "notes": "### PZHub Riot Social Update v2.2.1\n\n- **Painel Social Estilo Riot Client:** Gaveta lateral global onipresente (`#riot-social-drawer`) com 3 abas segmentadas (Amigos, Chat e Solicitações de Amizade).\n- **Janela Flutuante de Chat em Tempo Real:** Pop-up com aviso de 30 dias de histórico, envio instantâneo no Enter e transmissão via Supabase Realtime Channels.\n- **Gestão de Solicitações:** Busca por Nome + Tagline e aprovação/rejeição rápida com Toasts Táticos.\n- **Status Dinâmico:** Destaque para jogadores ativos em Project Zomboid com ícone de monitor de PC.",
+  "pub_date": "2026-09-09T03:00:00Z",
   "mandatory": false
 }

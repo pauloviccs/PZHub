@@ -146,17 +146,19 @@ pub async fn download_and_run_installer(
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    let installer_path: PathBuf = temp_dir.join(format!("PZHub_Update_Setup_{}.exe", timestamp));
+
+    let direct_url = normalize_installer_url(&installer_url);
+    let is_msi_url = direct_url.to_lowercase().ends_with(".msi");
+    let ext = if is_msi_url { "msi" } else { "exe" };
+    let mut installer_path: PathBuf = temp_dir.join(format!("PZHub_Update_Setup_{}.{}", timestamp, ext));
 
     if installer_path.exists() {
         let _ = std::fs::remove_file(&installer_path);
     }
 
-    let direct_url = normalize_installer_url(&installer_url);
-
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(300)) // 5 minutos de tolerância para conexões lentas
-        .user_agent("PZHub-Desktop-Updater/2.0")
+        .user_agent("PZHub-Desktop-Updater/2.2")
         .redirect(reqwest::redirect::Policy::limited(10))
         .build()
         .map_err(|e| format!("Falha ao inicializar cliente HTTP: {}", e))?;
@@ -205,15 +207,49 @@ pub async fn download_and_run_installer(
     }
 
     file.flush().map_err(|e| format!("Erro ao finalizar gravação do arquivo: {}", e))?;
-    drop(file); // Garante fechamento do handle do arquivo antes de executar
+    drop(file); // Garante fechamento do handle do arquivo antes de validar e executar
 
-    // Dispara o instalador NSIS desanexado do processo com suporte a elevação UAC no Windows
+    // Validação estrita de integridade via Magic Bytes (Impede erro 'Aplicativo de 16 bits' no Windows)
+    {
+        use std::io::Read;
+        let mut magic_buf = [0u8; 8];
+        if let Ok(mut check_file) = File::open(&installer_path) {
+            let bytes_read = check_file.read(&mut magic_buf).unwrap_or(0);
+            if bytes_read >= 2 {
+                let is_pe_exe = magic_buf[0] == 0x4D && magic_buf[1] == 0x5A; // Magic 'MZ'
+                let is_ole_msi = bytes_read >= 8 && magic_buf == [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]; // OLE Compound File
+
+                if !is_pe_exe && !is_ole_msi {
+                    let _ = std::fs::remove_file(&installer_path);
+                    return Err("O arquivo baixado não é um instalador válido do Windows (arquivo corrompido ou resposta de erro do servidor).".into());
+                }
+
+                // Corrige extensão em tempo de execução caso a URL tenha apontado para formato trocado
+                if is_ole_msi && installer_path.extension().and_then(|e| e.to_str()) != Some("msi") {
+                    let msi_path = temp_dir.join(format!("PZHub_Update_Setup_{}.msi", timestamp));
+                    if std::fs::rename(&installer_path, &msi_path).is_ok() {
+                        installer_path = msi_path;
+                    }
+                } else if is_pe_exe && installer_path.extension().and_then(|e| e.to_str()) != Some("exe") {
+                    let exe_path = temp_dir.join(format!("PZHub_Update_Setup_{}.exe", timestamp));
+                    if std::fs::rename(&installer_path, &exe_path).is_ok() {
+                        installer_path = exe_path;
+                    }
+                }
+            } else {
+                let _ = std::fs::remove_file(&installer_path);
+                return Err("O instalador baixado está vazio ou truncado.".into());
+            }
+        }
+    }
+
+    // Dispara o instalador desanexado do processo com suporte a elevação UAC no Windows
     #[cfg(target_os = "windows")]
     {
         let installer_str = installer_path.to_string_lossy().to_string();
 
         // Método 1: Disparo via ShellExecute através do 'cmd /C start "" "path"'
-        // O comando 'start' delega para a Shell do Windows, permitindo o prompt UAC de elevação do NSIS
+        // O comando 'start' delega para a Shell do Windows, permitindo o prompt UAC de elevação do NSIS ou MSI
         let spawn_res = std::process::Command::new("cmd")
             .args(["/C", "start", "", &installer_str])
             .spawn();

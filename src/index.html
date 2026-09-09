@@ -215,7 +215,7 @@
                   <div class="metric-box metric-box-updater" id="hub-updater-box" title="Clique para verificar atualizações no GitHub">
                     <span class="metric-label">VERSÃO DO PZHUB</span>
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                      <span class="metric-value text-emerald" id="hub-version-val">v2.2.0</span>
+                      <span class="metric-value text-emerald" id="hub-version-val">v2.2.1</span>
                       <button id="btn-hub-check-updates" class="btn-check-updates-pill" title="Buscar atualizações oficiais">
                         <svg class="icon-refresh-sync" viewBox="0 0 24 24" style="width: 10px; height: 10px; fill: currentColor;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
                         <span id="hub-btn-update-label">BUSCAR</span>
@@ -1049,11 +1049,11 @@
         <div class="riot-drawer-user-left">
           <div class="riot-user-avatar-wrap">
             <img id="riot-drawer-my-avatar" src="./assets/logo/PZHub_LogoIcon.svg" alt="Avatar" class="riot-user-avatar" />
-            <span class="riot-status-dot online"></span>
+            <span id="riot-drawer-my-dot" class="riot-status-dot offline"></span>
           </div>
           <div class="riot-drawer-user-meta">
-            <div id="riot-drawer-my-name" class="riot-drawer-username">viccs</div>
-            <div class="riot-drawer-user-status">Online</div>
+            <div id="riot-drawer-my-name" class="riot-drawer-username">Operador</div>
+            <div id="riot-drawer-my-status" class="riot-drawer-user-status">Aguardando Login</div>
           </div>
         </div>
         <button id="riot-btn-collapse-drawer" class="riot-btn-icon-collapse" title="Recolher Painel Social (ESC)">
@@ -1093,8 +1093,8 @@
         <div id="tab-riot-friends" class="riot-tab-pane active">
           <!-- Categoria Jogo Ativo (PROJECT ZOMBOID) -->
           <div class="riot-section-header">
-            <span class="riot-game-icon">🔻</span>
-            <span class="riot-section-title">PROJECT ZOMBOID</span>
+            <span class="riot-game-icon">🎮</span>
+            <span class="riot-section-title">ONLINE NO PZHUB</span>
             <span id="riot-count-in-game" class="riot-section-count">0</span>
           </div>
           <div id="riot-list-in-game" class="riot-friends-group-list">

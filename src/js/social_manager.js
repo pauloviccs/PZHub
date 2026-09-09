@@ -1,7 +1,7 @@
 /**
  * PZHub Desktop - Global Social Manager (Riot Client 1:1 Architecture)
- * Sincronização 100% REAL com o Supabase do Website (public.profiles, public.follows, public.profile_scraps)
- * Dados 100% reais de sobreviventes e criadores registrados no ecossistema PZHub.
+ * Sincronização 100% REAL com o Supabase (public.profiles, public.follows, public.direct_messages)
+ * Isolamento total: mensagens de chat NUNCA tocam em profile_scraps.
  */
 
 import { supabase, isConfigured } from './supabaseClient.js';
@@ -22,6 +22,7 @@ class SocialManager {
 
     this.onlinePresenceUsers = new Map(); // userId / username -> presence data
     this.realtimeChannel = null;
+    this.presenceHeartbeat = null;
   }
 
   async init() {
@@ -36,6 +37,17 @@ class SocialManager {
     window.addEventListener('pzhub:auth-changed', async (e) => {
       this.updateUserHeader(e.detail?.profile);
       await this.syncRealDataFromSupabase();
+      this.broadcastMyPresence();
+    });
+
+    // Heartbeat de presença ativa a cada 30 segundos
+    if (this.presenceHeartbeat) clearInterval(this.presenceHeartbeat);
+    this.presenceHeartbeat = setInterval(() => {
+      this.broadcastMyPresence();
+    }, 30000);
+
+    // Re-transmite presença quando a janela ganha foco
+    window.addEventListener('focus', () => {
       this.broadcastMyPresence();
     });
 
@@ -227,8 +239,6 @@ class SocialManager {
       const realSurvivors = (profiles || [])
         .filter(p => p.id !== myId)
         .map(p => {
-          const isOnlineInPresence = this.onlinePresenceUsers.has(p.id) || 
-                                     this.onlinePresenceUsers.has((p.username || '').toLowerCase());
           const isFollowed = myFollowingSet.has(p.id);
 
           return {
@@ -239,22 +249,14 @@ class SocialManager {
             role: p.role || 'user',
             avatar: p.avatar_url || '',
             bio: p.bio || '',
-            status: isOnlineInPresence ? 'in_game' : 'offline',
-            subText: isOnlineInPresence ? 'Online' : 'Offline',
+            status: 'offline',
+            subText: 'Offline',
             isFollowed: isFollowed
           };
         });
 
-      // Ordena: quem eu sigo ou está online primeiro
-      realSurvivors.sort((a, b) => {
-        if (a.status === 'in_game' && b.status !== 'in_game') return -1;
-        if (a.status !== 'in_game' && b.status === 'in_game') return 1;
-        if (a.isFollowed && !b.isFollowed) return -1;
-        if (!a.isFollowed && b.isFollowed) return 1;
-        return a.username.localeCompare(b.username);
-      });
-
       this.friends = realSurvivors;
+      this.updateFriendsPresence();
 
       // 4. Solicitações reais: Usuários que me seguem mas que eu ainda não sigo de volta
       const incomingFollowers = (profiles || []).filter(p => {
@@ -268,7 +270,7 @@ class SocialManager {
 
       this.requests = incomingFollowers;
 
-      // 5. Carrega mensagens históricas reais do mural de recados / direct scraps
+      // 5. Carrega mensagens históricas reais do canal de chat direto (public.direct_messages)
       if (myId) {
         await this.syncRealChatMessages(myId);
       }
@@ -284,17 +286,18 @@ class SocialManager {
   async syncRealChatMessages(myId) {
     if (!supabase) return;
     try {
-      const { data: scraps, error } = await supabase
-        .from('profile_scraps')
+      // Isola estritamente as mensagens privadas: NUNCA lê nem toca em profile_scraps
+      const { data: messages, error } = await supabase
+        .from('direct_messages')
         .select('*')
-        .or(`profile_id.eq.${myId},sender_id.eq.${myId}`)
+        .or(`receiver_id.eq.${myId},sender_id.eq.${myId}`)
         .order('created_at', { ascending: true });
 
-      if (error || !scraps) return;
+      if (error || !messages) return;
 
-      scraps.forEach(s => {
+      messages.forEach(s => {
         const isMine = s.sender_id === myId;
-        const targetId = isMine ? s.profile_id : s.sender_id;
+        const targetId = isMine ? s.receiver_id : s.sender_id;
         const d = new Date(s.created_at);
         const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
@@ -314,7 +317,8 @@ class SocialManager {
         }
       });
     } catch (e) {
-      console.warn('Erro ao sincronizar mensagens reais do Supabase:', e);
+      // Silencioso se a tabela direct_messages ainda não foi executada no Supabase
+      console.warn('Aviso: direct_messages offline ou não migrado no Supabase:', e);
     }
   }
 
@@ -440,20 +444,82 @@ class SocialManager {
     indicator.style.width = `${width}px`;
   }
 
+  getFriendPresence(friend) {
+    if (!friend) return null;
+    if (friend.id && this.onlinePresenceUsers.has(friend.id)) {
+      return this.onlinePresenceUsers.get(friend.id);
+    }
+    const raw = (friend.rawUsername || friend.username || '').toLowerCase();
+    if (raw && this.onlinePresenceUsers.has(raw)) {
+      return this.onlinePresenceUsers.get(raw);
+    }
+    return null;
+  }
+
+  updateFriendsPresence() {
+    for (const f of this.friends) {
+      const presence = this.getFriendPresence(f);
+      if (presence) {
+        const isInGame = Boolean(presence.is_in_game);
+        f.status = isInGame ? 'in_game' : 'online';
+        f.subText = isInGame ? 'Em Project Zomboid' : 'Online no PZHub';
+      } else {
+        f.status = 'offline';
+        f.subText = 'Offline';
+      }
+    }
+
+    this.friends.sort((a, b) => {
+      const aOnline = a.status !== 'offline';
+      const bOnline = b.status !== 'offline';
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+      if (a.isFollowed && !b.isFollowed) return -1;
+      if (!a.isFollowed && b.isFollowed) return 1;
+      return a.username.localeCompare(b.username);
+    });
+  }
+
+  updateActiveChatHeader() {
+    if (!this.activeChatFriend) return;
+    const friend = this.activeChatFriend;
+    const presence = this.getFriendPresence(friend);
+    const isOnline = Boolean(presence) || friend.status !== 'offline';
+    const isInGame = presence?.is_in_game || friend.status === 'in_game';
+
+    const statusEl = document.getElementById('riot-chat-target-status');
+    const dotEl = document.getElementById('riot-chat-target-dot');
+
+    if (statusEl) {
+      statusEl.textContent = isInGame ? 'Em Project Zomboid' : (isOnline ? 'Online no PZHub' : 'Offline');
+    }
+    if (dotEl) {
+      dotEl.className = `riot-status-dot ${isInGame ? 'in-game' : (isOnline ? 'online' : 'offline')}`;
+    }
+  }
+
   updateUserHeader(profile = null) {
     const p = profile || getCurrentUserProfile();
+    const user = getCurrentUser();
     const avatarEl = document.getElementById('riot-drawer-my-avatar');
     const nameEl = document.getElementById('riot-drawer-my-name');
+    const statusEl = document.getElementById('riot-drawer-my-status');
+    const dotEl = document.getElementById('riot-drawer-my-dot');
 
-    const name = p?.display_name || p?.username || 'Operador';
-    if (nameEl) nameEl.textContent = name;
+    if (user && p) {
+      const name = p?.display_name || p?.username || user.email?.split('@')[0] || 'Operador';
+      if (nameEl) nameEl.textContent = name;
 
-    if (avatarEl) {
-      if (p?.avatar_url) {
-        avatarEl.src = p.avatar_url;
-      } else {
-        avatarEl.src = './assets/logo/PZHub_LogoIcon.svg';
+      if (avatarEl) {
+        avatarEl.src = p?.avatar_url || './assets/logo/PZHub_LogoIcon.svg';
       }
+      if (statusEl) statusEl.textContent = 'Online no PZHub';
+      if (dotEl) dotEl.className = 'riot-status-dot online';
+    } else {
+      if (nameEl) nameEl.textContent = 'Operador (Desconectado)';
+      if (avatarEl) avatarEl.src = './assets/logo/PZHub_LogoIcon.svg';
+      if (statusEl) statusEl.textContent = 'Aguardando Login';
+      if (dotEl) dotEl.className = 'riot-status-dot offline';
     }
   }
 
@@ -494,19 +560,19 @@ class SocialManager {
       return f.username.toLowerCase().includes(query) || (f.tagline && f.tagline.toLowerCase().includes(query));
     });
 
-    const inGame = filtered.filter(f => f.status === 'in_game');
-    const offline = filtered.filter(f => f.status === 'offline');
+    const onlineList = filtered.filter(f => f.status !== 'offline');
+    const offlineList = filtered.filter(f => f.status === 'offline');
 
-    if (inGameCountEl) inGameCountEl.textContent = inGame.length;
-    if (offlineCountEl) offlineCountEl.textContent = offline.length;
+    if (inGameCountEl) inGameCountEl.textContent = onlineList.length;
+    if (offlineCountEl) offlineCountEl.textContent = offlineList.length;
 
-    // Seção de jogadores ativos
-    inGameContainer.innerHTML = inGame.length > 0 
-      ? inGame.map(f => this.createFriendRowHTML(f, true)).join('')
-      : `<div class="riot-friends-empty-sub">Nenhum operador em jogo no momento.</div>`;
+    // Seção de jogadores ativos / online
+    inGameContainer.innerHTML = onlineList.length > 0 
+      ? onlineList.map(f => this.createFriendRowHTML(f, f.status)).join('')
+      : `<div class="riot-friends-empty-sub">Nenhum operador online no momento.</div>`;
 
     // Seção offline com todos os outros usuários reais
-    offlineContainer.innerHTML = offline.map(f => this.createFriendRowHTML(f, false)).join('');
+    offlineContainer.innerHTML = offlineList.map(f => this.createFriendRowHTML(f, 'offline')).join('');
 
     // Adiciona evento de clique para abrir o chat flutuante com a pessoa real
     const allRows = document.querySelectorAll('.riot-friend-row');
@@ -521,10 +587,13 @@ class SocialManager {
     });
   }
 
-  createFriendRowHTML(friend, isOnline) {
-    const statusClass = isOnline ? 'in-game' : 'offline';
+  createFriendRowHTML(friend, status) {
+    const isOnline = status !== 'offline';
+    const isInGame = status === 'in_game';
+    const statusClass = isInGame ? 'in-game' : (isOnline ? 'online' : 'offline');
+    const statusText = isInGame ? 'Em Project Zomboid' : (isOnline ? 'Online no PZHub' : 'Offline');
     const iconSub = isOnline
-      ? `<svg viewBox="0 0 24 24" class="riot-sub-desktop-ico"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg><span>Online</span>`
+      ? `<svg viewBox="0 0 24 24" class="riot-sub-desktop-ico"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg><span>${statusText}</span>`
       : `<span>Offline</span>`;
 
     const avatarInitial = (friend.username || 'P').charAt(0).toUpperCase();
@@ -653,6 +722,11 @@ class SocialManager {
       const lastMsg = msgs[msgs.length - 1];
       const initial = (friend.username || 'P').charAt(0).toUpperCase();
 
+      const presence = this.getFriendPresence(friend);
+      const isOnline = Boolean(presence) || friend.status !== 'offline';
+      const isInGame = presence?.is_in_game || friend.status === 'in_game';
+      const dotClass = isInGame ? 'in-game' : (isOnline ? 'online' : 'offline');
+
       return `
         <div class="riot-conversation-row" data-id="${friend.id}">
           <div class="riot-friend-avatar-cluster">
@@ -660,7 +734,7 @@ class SocialManager {
               ? `<img src="${friend.avatar}" class="riot-friend-avatar-img" alt="${friend.username}" />`
               : `<div class="riot-friend-avatar-fallback">${initial}</div>`
             }
-            <span class="riot-status-dot ${friend.status === 'in_game' ? 'in-game' : 'offline'}"></span>
+            <span class="riot-status-dot ${dotClass}"></span>
           </div>
           <div class="riot-convo-meta">
             <div class="riot-convo-header">
@@ -691,18 +765,14 @@ class SocialManager {
     if (!chatPopup) return;
 
     const nameEl = document.getElementById('riot-chat-target-name');
-    const statusEl = document.getElementById('riot-chat-target-status');
-    const dotEl = document.getElementById('riot-chat-target-dot');
     const avatarEl = document.getElementById('riot-chat-target-avatar');
 
     if (nameEl) nameEl.textContent = friend.username;
-    if (statusEl) statusEl.textContent = friend.status === 'in_game' ? 'Em Project Zomboid' : 'Offline';
-    if (dotEl) {
-      dotEl.className = `riot-status-dot ${friend.status === 'in_game' ? 'in-game' : 'offline'}`;
-    }
     if (avatarEl) {
       avatarEl.src = friend.avatar || './assets/logo/PZHub_LogoIcon.svg';
     }
+
+    this.updateActiveChatHeader();
 
     chatPopup.style.display = 'flex';
     this.renderChatMessages(friend.id);
@@ -780,18 +850,18 @@ class SocialManager {
     }
     this.renderChatsTab();
 
-    // 1. Grava no banco real (public.profile_scraps) se ambos estiverem identificados
+    // 1. Grava no banco real (public.direct_messages) com isolamento total
     if (supabase && myId && targetId) {
       try {
-        await supabase.from('profile_scraps').insert({
-          profile_id: targetId,
+        await supabase.from('direct_messages').insert({
+          receiver_id: targetId,
           sender_id: myId,
           sender_name: myName,
           sender_avatar: myAvatar,
           message: text
         });
       } catch (err) {
-        console.warn('Erro ao gravar mensagem em profile_scraps:', err);
+        console.warn('Aviso: direct_messages offline ou não migrado no Supabase:', err);
       }
     }
 
@@ -805,9 +875,58 @@ class SocialManager {
           senderId: myId,
           text: text,
           senderName: myName,
+          senderAvatar: myAvatar,
           time: timeStr
         }
       });
+    }
+  }
+
+  // =========================================================================
+  // SISTEMA DE SOM DE NOTIFICAÇÃO (WEB AUDIO API - ZERO ASSETS DEPENDENCY)
+  // =========================================================================
+  playNotificationSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const now = ctx.currentTime;
+
+      // Nota 1 (F#5 - 739.99Hz para tom tático cristalino e aveludado)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(739.99, now);
+      osc1.frequency.exponentialRampToValueAtTime(932.33, now + 0.08);
+      gain1.gain.setValueAtTime(0.001, now);
+      gain1.gain.linearRampToValueAtTime(0.12, now + 0.015);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+
+      // Nota 2 (C#6 - 1108.73Hz estilo sino suave com decaimento harmônico)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1108.73, now + 0.06);
+      osc2.frequency.exponentialRampToValueAtTime(1396.91, now + 0.12);
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.setValueAtTime(0.001, now + 0.06);
+      gain2.gain.linearRampToValueAtTime(0.09, now + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+
+      osc1.start(now);
+      osc1.stop(now + 0.33);
+      osc2.start(now + 0.06);
+      osc2.stop(now + 0.39);
+    } catch (e) {
+      console.warn('Não foi possível reproduzir som de notificação:', e);
     }
   }
 
@@ -820,7 +939,7 @@ class SocialManager {
     try {
       this.realtimeChannel = supabase.channel('pzhub-global-social', {
         config: {
-          presence: { key: getCurrentUser()?.id || 'guest-' + Math.random() }
+          presence: { key: getCurrentUser()?.id || 'guest-' + Math.random().toString(36).substring(2, 9) }
         }
       });
 
@@ -837,7 +956,11 @@ class SocialManager {
             });
           }
 
+          // Atualiza presença dinâmica dos amigos e re-renderiza componentes
+          this.updateFriendsPresence();
           this.renderFriends();
+          this.renderChatsTab();
+          this.updateActiveChatHeader();
         })
         .on('broadcast', { event: 'pzhub:chat-message' }, (payload) => {
           this.handleIncomingBroadcast(payload);
@@ -858,13 +981,16 @@ class SocialManager {
     const user = getCurrentUser();
     if (!profile && !user) return;
 
+    const isInGame = Boolean(window.__PZHUB_IN_GAME__);
+
     try {
       await this.realtimeChannel.track({
         user_id: user?.id || profile?.id,
-        username: profile?.username,
+        username: profile?.username || user?.email?.split('@')[0],
         display_name: profile?.display_name || profile?.username,
         avatar_url: profile?.avatar_url,
         role: profile?.role,
+        is_in_game: isInGame,
         online_at: new Date().toISOString()
       });
     } catch (err) {
@@ -882,6 +1008,9 @@ class SocialManager {
     // Verifica se a mensagem é endereçada a mim
     if (data.targetId && myId && data.targetId !== myId) return;
 
+    // Não processa nem toca som se a mensagem foi enviada por mim mesmo
+    if (data.senderId && myId && data.senderId === myId) return;
+
     const senderId = data.senderId || 'survivor';
     const msg = {
       id: `in-${Date.now()}`,
@@ -897,7 +1026,10 @@ class SocialManager {
     this.chats.get(senderId).push(msg);
     this.saveLocalCache();
 
-    if (this.activeChatFriend && this.activeChatFriend.id === senderId) {
+    // Toca o som agradável tático de nova mensagem!
+    this.playNotificationSound();
+
+    if (this.activeChatFriend && this.activeChatFriend.id === senderId && this.isChatOpen()) {
       this.renderChatMessages(senderId);
     } else {
       showTacticalToast({

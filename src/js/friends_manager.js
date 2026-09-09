@@ -145,7 +145,7 @@ export class FriendsManager {
       const user = getCurrentUser();
       const channelKey = user?.id || `anon-${Math.random().toString(36).substring(2, 9)}`;
 
-      this.presenceChannel = supabase.channel('pzhub-global-presence', {
+      this.presenceChannel = supabase.channel('pzhub-global-social', {
         config: {
           presence: { key: channelKey }
         }
@@ -161,6 +161,9 @@ export class FriendsManager {
             presences.forEach((p) => {
               if (p.username) {
                 this.onlineDesktopUsers.set(p.username.toLowerCase(), p);
+              }
+              if (p.user_id) {
+                this.onlineDesktopUsers.set(p.user_id, p);
               }
             });
           }

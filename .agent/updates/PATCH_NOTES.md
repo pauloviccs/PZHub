@@ -5,6 +5,44 @@
 
 ---
 
+## 📻 Atualização 2.2.1 — "Linha Segura: Fim do Vazamento, Presença Viva & Alerta Tático"
+*Data da Transmissão: 09 de Setembro de 2026*
+
+### 🎙️ Palavra dos Devs
+> *Alguém conectou o cabo do rádio do esquadrão no alto-falante da praça central de West Point!* 📢🤦‍♂️  
+> Na versão 2.2.0, nós estávamos tão empolgados com o painel social estilo Riot Client que um detalhe gravíssimo passou despercebido: as conversas privadas de DM estavam sendo salvas no mural público de recados (`profile_scraps`) do perfil do usuário no website! Ou seja, aquele segredo tático que você combinava com o seu parceiro estava virando post no feed público para quem quisesse ver.  
+> Além disso, o rádio estava dando "falso online": o cabeçalho dizia com certeza absoluta que você era o "viccs" e estava "Online", enquanto seus amigos reais conectados no jogo apareciam como defuntos offline na lista. E para piorar, as mensagens chegavam no mais absoluto silêncio, te deixando no vácuo no meio de um tiroteio.  
+> Na **Atualização 2.2.1**, nós passamos o trator nesses problemas: criamos uma **linha militar 100% criptografada e privada**, ativamos o **radar de presença dinâmico** e adicionamos um **alerta sonoro tático e elegante** a cada nova mensagem!
+
+---
+
+### 🛡️ Destaques da Versão
+
+#### 🔒 1. Linha Segura & Sigilo Militar: Fim Definitivo do Vazamento de DMs
+- **Tabela Dedicada `direct_messages`:** Desconectamos 100% o chat do mural de recados. Agora existe uma via expressa segura no banco de dados exclusiva para mensagens diretas privadas.
+- **Segurança Máxima via RLS (Row Level Security):** O banco de dados Supabase foi configurado com regras rígidas onde apenas os dois participantes da conversa (remetente e destinatário autenticados) possuem permissão para ler o histórico. Ninguém de fora consegue bisbilhotar.
+- **Resiliência e Buffer Local:** O cliente conta com fallback defensivo em cache local (`pzhub_real_chats_cache`) e Realtime Broadcast. Suas conversas continuam fluidas e sem perda de pacotes mesmo se o servidor estiver sob manutenção.
+
+#### 📡 2. Radar de Presença em Tempo Real: Adeus ao "Falso Online"
+- **Faxina nos Dados Estáticos:** Exterminamos o texto chumbado no HTML que fingia que todo mundo era "viccs" e estava "Online". Agora o cabeçalho reflete a identidade autêntica do operador autenticado.
+- **Algoritmo de Presença Dinâmica (`updateFriendsPresence`):** O PZHub agora escuta ativamente o evento `sync` do WebSocket de presença do Supabase. Assim que um amigo entra no app ou no Zomboid, o status dele vira verde neon e ele é automaticamente promovido para o topo da lista de amigos!
+- **Status Reativo no Chat Aberto:** Se você estiver com a janela de DM aberta e o seu parceiro fechar o jogo ou ficar ausente, o cabeçalho do pop-up atualiza o status dele em tempo real na sua frente.
+- **Heartbeat Ativo (30s):** Criamos uma rotina periódica de pulso de presença a cada 30 segundos e no retorno de foco da janela, garantindo que a sua conexão não expire e você não suma do radar dos seus aliados.
+- **Canal Unificado:** Unificamos o canal de presença do mapa e do painel social sob a mesma frequência global (`pzhub-global-social`).
+
+#### 🔔 3. Alerta Acústico Tático (Sintetizador Web Audio API)
+- **Notificação Sonora Suave:** Agora, a cada mensagem recebida de outro sobrevivente, o PZHub toca um acorde bi-tonal elegante e discreto (F#5 para C#6, de 739.99Hz a 1108.73Hz com decaimento suave de 0.28 segundos).
+- **Zero Arquivos Externos:** O som é sintetizado puramente em código via Web Audio API do navegador/webview. Sem risco de arquivos `.mp3` corrompidos, sem consumo de dados e sem falhas de carregamento no Windows.
+- **Foco no Combate:** O volume e a frequência foram calibrados para chamar a atenção sem estourar os tímpanos de quem está jogando com fone de ouvido imersivo no escuro.
+
+#### 📦 4. Pacotes de Distribuição Oficiais v2.2.1 Compilados
+- **Instaladores Prontos para Uso:** Binários de release oficiais de 64 bits compilados via Rust e Tauri v2:
+  - `PZHub_2.2.1_x64-setup.exe` (Instalador leve NSIS de 4.3 MB com ícone nativo multi-resolução e atalho limpo).
+  - `PZHub_2.2.1_x64_en-US.msi` (Pacote corporativo Windows Installer WiX de 5.9 MB).
+- **Website Otimizado:** Build de produção gerada em `VICCS_PZHub_Website/dist/` com bundle Vite ultra-rápido pronto para deploy na Vercel.
+
+---
+
 ## 📻 Atualização 2.2.0 — "Frequência Aberta: O Painel Social Tático"
 *Data da Transmissão: 09 de Setembro de 2026*
 
@@ -137,6 +175,8 @@
 
 | Versão | O que mudou em uma frase? |
 | :---: | :--- |
+| **v2.2.1** | Linha segura: DMs 100% isoladas do mural do site, presença viva em tempo real e alerta sonoro tático. |
+| **v2.2.0** | Painel social global estilo Riot Client com gaveta retrátil onipresente e pop-up de DM. |
 | **v2.1.1** | O auto-updater agora fala sua língua, não trava a tela e avisa se a transmissão falhou. |
 | **v2.1.0** | Painel de amigos estilo Riot, botão de Jogar com RAM e layout sem bugs. |
 | **v2.0.0** | Nova cara militar no estilo Tarkov, gerenciador de modpacks e scanner de mods. |

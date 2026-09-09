@@ -5,7 +5,7 @@
 
 import { parseMarkdown } from './markdown_parser.js';
 
-export const CURRENT_APP_VERSION = '2.2.0';
+export const CURRENT_APP_VERSION = '2.2.1';
 
 // Endpoint padrão do manifesto oficial no GitHub Raw
 export const DEFAULT_UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/pauloviccs/PZHub/master/latest.json';

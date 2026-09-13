@@ -42,7 +42,22 @@ Armazena os modpacks publicados no catálogo comunitário.
 
 ---
 
-## 3. Estrutura do Campo `mods` (JSONB)
+## 3. Tabela: `public.direct_messages`
+Armazena as mensagens diretas e privadas trocadas entre operadores via Painel Social Desktop / DM Pop-up, garantindo isolamento total em relação ao mural comunitário do website.
+
+| Coluna | Tipo | Restrições | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK, `default gen_random_uuid()` | Identificador único da mensagem |
+| `sender_id` | `uuid` | FK `profiles(id)`, `not null` | ID do operador remetente |
+| `receiver_id` | `uuid` | FK `profiles(id)`, `not null` | ID do operador destinatário |
+| `sender_name` | `text` | `not null` | Nome do operador remetente |
+| `sender_avatar` | `text` | `nullable` | Foto de perfil / avatar do remetente |
+| `message` | `text` | `not null` | Conteúdo da mensagem de texto |
+| `created_at` | `timestamptz` | `default now()`, `not null` | Carimbo de data e hora do envio |
+
+---
+
+## 4. Estrutura do Campo `mods` (JSONB em `modpacks`)
 
 ```json
 [
@@ -75,7 +90,17 @@ Armazena os modpacks publicados no catálogo comunitário.
 
 ---
 
-## 4. Políticas de Segurança (Row Level Security - RLS)
+## 5. Políticas de Segurança (Row Level Security - RLS)
 
+### `public.modpacks`
 - **Leitura Pública:** Aberta para qualquer cliente (`is_public = true`). Consumida diretamente pelo aplicativo desktop PZHub e pela vitrine web.
 - **Inserção / Atualização:** Restrita a usuários autenticados via Supabase Auth (`auth.uid() = author_id`).
+
+### `public.profiles`
+- **Leitura Pública:** Aberta para usuários autenticados e clientes públicos para exibição de operadores e criadores.
+- **Atualização:** Restrita ao próprio operador dono do perfil (`auth.uid() = id`).
+
+### `public.direct_messages`
+- **Leitura Privada:** Exclusiva para participantes da conversa: `(auth.uid() = sender_id OR auth.uid() = receiver_id)`. Nenhum usuário de fora ou visitante anônimo tem acesso de leitura.
+- **Inserção:** Permitida somente para usuários autenticados enviando como eles mesmos: `auth.uid() = sender_id`.
+

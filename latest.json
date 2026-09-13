@@ -1,8 +1,8 @@
 {
-  "version": "2.2.1",
-  "name": "PZHub Tactical Patch v2.2.1",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.1/PZHub_2.2.1_x64-setup.exe",
-  "notes": "### PZHub Tactical Patch v2.2.1\n\n- **Privacidade Total no Chat:** Isolamento definitivo de conversas em tabela própria (`direct_messages`), eliminando qualquer vazamento para o mural público.\n- **Sincronização Dinâmica de Presença:** Correção do status offline. Amigos online são detectados em tempo real e sobem dinamicamente para o topo da lista.\n- **Notificação Acústica Tática:** Som suave e cristalino via Web Audio API a cada nova mensagem recebida no chat.\n- **Interface Limpa:** Remoção de dados estáticos falsos no cabeçalho social.",
-  "pub_date": "2026-09-09T17:00:00Z",
+  "version": "2.2.2",
+  "name": "PZHub Tactical Patch v2.2.2",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.2/PZHub_2.2.2_x64-setup.exe",
+  "notes": "### PZHub Tactical Patch v2.2.2\n\n- **Overhaul de Blips GTA V:** Substituição de emojis por ícones vetoriais SVG de alta resolução baseados na documentação oficial de Blips do GTA V (FiveM/RAGE:MP).\n- **Fim dos Buracos no Mapa:** Mapeamento e catalogação oficial de oficinas mecânicas e funilarias em Fallas Lake, West Point, Muldraugh e Riverside (1.017 prédios no índice).\n- **Desbloqueio de 537+ Prédios:** Ativação de todas as 20 categorias do mapa por padrão.\n- **Sistema LOD em 3 Camadas:** Zoom dinâmico que prioriza serviços vitais e evita poluição visual no radar.",
+  "pub_date": "2026-09-13T03:00:00Z",
   "mandatory": false
 }

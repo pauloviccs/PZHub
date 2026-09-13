@@ -5,6 +5,60 @@
 
 ---
 
+## 📻 Atualização 2.2.2 — "GPS de Los Santos: O Overhaul de Blips GTA V & Fim dos Buracos no Mapa"
+*Data da Transmissão: 13 de Setembro de 2026*
+
+### 🎙️ Palavra dos Devs
+> *Sabe aquela sensação de abrir o GPS no meio de Fallas Lake precisando trocar o radiador amassado da sua van e dar de cara com um ponto de interrogação vermelho gigante no mapa? Ou de procurar uma loja de armas e ver um emoji genérico que sumia no asfalto?* 🗺️🚗💥  
+> Até a versão 2.2.1, o nosso mapa de Knox County sofria de um mal silencioso: ele tinha mais de mil prédios indexados, mas um filtro cego mantinha **mais de 537 edifícios trancados no escuro**, enquanto oficinas mecânicas inteiras ficavam sem categoria, parecendo galpões abandonados.  
+> Na **Atualização 2.2.2**, nós importamos diretamente a inteligência e o estilo icônico dos **Blips do GTA V (documentação oficial do FiveM / RAGE:MP)** para o Project Zomboid!  
+> Agora o seu radar conta com **20 ícones vetoriais SVG de alta resolução**, auras luminosas em neon tático, uma nova categoria oficial de **Oficinas Mecânicas (Los Santos Customs)** que resolveu os buracos de Fallas Lake e West Point, e um sistema inteligente de **Level of Detail (LOD)** que limpa o mapa no zoom out e revela tudo no zoom in. Prepare a rota, sobrevivente: Knox County nunca teve um radar tão bonito!
+
+---
+
+### 🛡️ Destaques da Versão
+
+#### 🎯 1. Motor de Blips Vetoriais GTA V: Estética Radar de Los Santos (`src/js/blip_icons.js`)
+- **Fim dos Emojis Embaçados:** Adeus aos emojis que ficavam pixelados ou distorcidos dependendo do monitor ou do Windows. Implementamos um subsistema 100% vetorial em SVG nativo.
+- **20 Ícones Oficiais do GTA V (FiveM / RAGE:MP):**
+  - 🔫 **Ammu-Nation (Blip 110):** Pistola tática em Vermelho Vivo (`#ff4757`).
+  - 🛡️ **Polícia LSPD (Blip 60):** Escudo com estrela em Azul Policial (`#2e86de`).
+  - 🏥 **Hospital & Clínicas (Blip 61):** Cruz médica em Verde Esmeralda (`#2ed573`).
+  - 💊 **Farmácias (Blip 51):** Cápsula em Rosa Quente (`#ff6b81`).
+  - 🔧 **Los Santos Customs / Oficinas (Blip 72):** Chave inglesa em Laranja Mecânico (`#ffa502`).
+  - ⛽ **Postos de Combustível (Blip 361):** Bomba em Ciano Neon (`#00d2d3`).
+  - 💲 **Conveniência 24/7 & Mercados (Blip 52):** Cifrão em Ouro Dourado (`#eccc68`).
+  - 🔨 **Ferragens & Depósitos (Blip 402):** Martelo em Verde Menta (`#10ac84`).
+  - 🍔 **Restaurantes / Spiffo's (Blip 93):** Garfo e faca em Coral (`#ff7f50`).
+  - 🍸 **Bares & Bebidas (Blip 84):** Coquetel em Âmbar (`#f39c12`).
+  - 👔 **Lojas de Roupas / Suburban (Blip 73):** Cabide em Roxo (`#a55eea`).
+  - 🏭 **Galpões & Indústrias (Blip 478):** Silhueta em Grafite (`#57606f`).
+  - 🚒 **Bombeiros (Blip 436), Bancos (Blip 108), Bibliotecas (Blip 358), Escolas, Prisões e Safehouses.**
+- **Núcleo Chanfrado & Halo Neon (`src/css/map.css`):** Cada blip possui base escura de alto contraste com borda luminescente e um halo radial que brilha sobre qualquer textura de terreno. No hover, o ícone cresce suavemente (`scale(1.35)`) com efeito magnético.
+
+#### 🔧 2. Fim dos Buracos no Mapa & Resgate das Oficinas Mecânicas
+- **A Resolução do Caso Fallas Lake:** Identificamos que o misterioso prédio marcado com "?" vermelho nas coordenadas `X: 7315 | Y: 8232` era a grande **Oficina Mecânica & Funilaria de Fallas Lake** (`Auto Repair & Upholstery`), que estava sem categoria na base de dados antiga.
+- **Nova Categoria Oficial `mechanic`:** Criada a categoria no [meta.json](file:///g:/GitHub/Vibecoding/VICCS_Git/VICCS_PZHub/VICCS_PZHub/src/data/meta.json) com suporte nativo no motor de mapas.
+- **Varredura e Enriquecimento em Knox County:** Executamos script de telemetria que resgatou e catalogou oficinas e funilarias mecânicas em **Fallas Lake**, **West Point**, **Muldraugh** e **Riverside**. O banco agora conta com **1.017 edifícios meticulosamente identificados**.
+
+#### 🗺️ 3. Desbloqueio de 537+ Edifícios & LOD em 3 Camadas
+- **Fim da Cegueira Seletiva:** O motor de mapas vinha travado com apenas 9 categorias ativas por padrão. Expandimos para **todas as 20 categorias ativas**, liberando centenas de pontos de interesse que estavam escondidos.
+- **Sistema Inteligente de Nível de Detalhe (LOD):**
+  - **Tier 1 (Zoom >= 13):** Serviços de emergência e alta prioridade (Armarias, Delegacias, Hospitais, Bombeiros, Oficinas e Postos). Marcadores grandes (**30px**) visíveis à distância.
+  - **Tier 2 (Zoom >= 14):** Comércio vital (Supermercados, Farmácias, Ferramentas, Roupas, Restaurantes, Bancos). Marcadores médios (**26px**).
+  - **Tier 3 (Zoom >= 15):** Áreas industriais e de apoio (Armazéns, Galpões, Depósitos, Escolas, Motéis). Marcadores compactos (**22px**).
+
+#### 🎛️ 4. Barra Lateral de Filtros Reparada & Completa
+- **18 Categorias com Cores Oficiais:** A checklist da barra lateral agora lista todas as categorias táticas com seus respectivos indicadores coloridos de GTA V.
+- **Toggle Direto no Motor:** Corrigido o direcionador do evento de clique, que antes chamava o controller de janela em vez de `mapEngine.toggleCategory()`. Desligar e ligar categorias agora é instantâneo e sem travamentos.
+
+#### 📦 5. Instalador Oficial Windows v2.2.2 Gerado
+- **Instalador NSIS Pronto para Produção:**
+  - `src-tauri/target/release/bundle/nsis/PZHub_2.2.2_x64-setup.exe` (4.3 MB, assinado e otimizado com perfil de release do Rust).
+- **Sincronização Total de Metadados:** `Cargo.toml`, `package.json`, `tauri.conf.json`, `updater.js`, `index.html` e `latest.json` unificados na versão **2.2.2**.
+
+---
+
 ## 📻 Atualização 2.2.1 — "Linha Segura: Fim do Vazamento, Presença Viva & Alerta Tático"
 *Data da Transmissão: 09 de Setembro de 2026*
 

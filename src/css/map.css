@@ -269,28 +269,106 @@
   text-transform: uppercase;
 }
 
-/* POI Building Marker */
+/* =========================================================================
+   BLIPS TÁTICOS ESTILO GTA V / FIVEM (PZHub Tactical Map)
+   ========================================================================= */
 .poi-building-marker {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(12, 18, 28, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  transition: transform 0.15s ease;
 }
 
-.poi-building-marker:hover {
-  transform: scale(1.35);
-  border-color: var(--accent-cyan);
+.poi-blip-gta {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.poi-building-marker:hover .poi-blip-gta {
+  transform: scale(1.35) translateY(-2px);
   z-index: 1000 !important;
 }
 
-.poi-emoji {
-  font-size: 12px;
+/* Aura / Glow neon tático da categoria */
+.poi-blip-gta .blip-halo {
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  background: radial-gradient(circle, var(--blip-color) 0%, transparent 75%);
+  opacity: 0.35;
+  filter: blur(2px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, filter 0.2s ease;
 }
+
+.poi-building-marker:hover .blip-halo {
+  opacity: 0.9;
+  filter: blur(4px);
+}
+
+/* Núcleo do Blip: Fundo escuro chanfrado com borda colorida viva */
+.poi-blip-gta .blip-core {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  background: #0f1115;
+  border: 1.5px solid var(--blip-color);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blip-color);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+  padding: 2.5px;
+  transition: all 0.18s ease;
+}
+
+.poi-building-marker:hover .blip-core {
+  background: #16191f;
+  border-color: #ffffff;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.95), 0 0 10px var(--blip-color);
+}
+
+.poi-blip-gta .blip-core svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+
+/* Tiers de Tamanho */
+.poi-blip-gta.tier-1 {
+  width: 30px;
+  height: 30px;
+}
+.poi-blip-gta.tier-1 .blip-core {
+  width: 26px;
+  height: 26px;
+  border-width: 2px;
+}
+
+.poi-blip-gta.tier-3 {
+  width: 22px;
+  height: 22px;
+}
+.poi-blip-gta.tier-3 .blip-core {
+  width: 18px;
+  height: 18px;
+  padding: 2px;
+}
+
 
 /* Tactical Street Label */
 .tactical-street-label {

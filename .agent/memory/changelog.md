@@ -1,5 +1,47 @@
 # Changelog
 
+## [2.2.2] - 2026-09-13 (Overhaul de Blips Táticos GTA V, Enriquecimento de POIs & Sistema de LOD)
+
+### Adicionado
+- **Motor de Blips Vetoriais SVG Estilo GTA V (`src/js/blip_icons.js`):** Conjunto completo de ícones SVG baseados nas referências oficiais de Blips do GTA V (FiveM / RAGE:MP) para todas as 20 categorias do Project Zomboid (Pistola Ammu-Nation #110, Escudo Policial LSPD #60, Cruz Hospitalar #61, Pílula Farmácia #51, Chave Inglesa LS Customs #72, Cifrão Loja 24/7 #52, Bomba de Gasolina #361, Garfo e Faca Spiffo #93, Martelo Hardware #402, etc.).
+- **Estética Visual de Alto Contraste & Efeito Neon Tático (`src/css/map.css`):** Estrutura `.poi-blip-gta` com fundo escuro chanfrado, borda com a cor característica de cada blip, efeito de brilho halo neon e animação de expansão suave ao passar o cursor (`transform: scale(1.35)`).
+- **Enriquecimento da Base de Dados de POIs (`src/data/buildings_index.json` & `meta.json`):**
+  - Criação da categoria oficial `mechanic` com cor `#ffa502` e ícone de Chave Inglesa (Blip 72 - LS Customs).
+  - Identificação e catalogação dos prédios de reparo automotivo e funilarias que estavam sem ícone no mapa (incluindo o complexo de Fallas Lake `28_32_14-17`, oficinas de West Point, Muldraugh e Riverside). Total indexado: 1.017 edifícios.
+- **Desbloqueio de 537+ Edifícios no Motor de Mapa (`src/js/map_engine.js`):** Expansão do conjunto `activeCategories` padrão de 9 para 20 categorias, exibindo armazéns, garagens, lojas de departamento e prédios cívicos previamente escondidos.
+- **Sistema Inteligente de Level of Detail (LOD) em 3 Camadas:**
+  - *Tier 1 (Zoom >= 13):* Serviços de emergência e alta prioridade (Armarias, Delegacias, Hospitais, Bombeiros, Oficinas Mecânicas, Postos de Gasolina). Marcadores grandes (30px).
+  - *Tier 2 (Zoom >= 14):* Comércio essencial e suprimentos (Supermercados, Farmácias, Ferramentas, Roupas, Restaurantes, Bancos, Igrejas). Marcadores médios (26px).
+  - *Tier 3 (Zoom >= 15):* Áreas industriais e de apoio (Armazéns, Galpões, Depósitos, Escolas, Motéis). Marcadores compactos (22px).
+
+### Corrigido
+- **Filtros de Categoria da Barra Lateral (`src/js/app.js`):** Substituição da lista obsoleta de 6 categorias pela listagem completa de 18 categorias com suas cores táticas de GTA V e correção do binding do evento de toggle de `overlayController` para `this.mapEngine.toggleCategory(catId, enabled)`.
+- **Implementação do Método Faltante `updateLOD()` (`src/js/map_engine.js`):** Criação da rotina que ajusta os marcadores em tempo real durante os eventos de zoom do Leaflet.
+
+## [2.2.1] - 2026-09-09 (Linha Segura: Isolamento de DMs, Presença Viva, Alerta Acústico & Validação Magic Bytes)
+
+### Adicionado
+- **Isolamento de Mensagens Privadas (`direct_messages`):** Desacoplamento total do chat de mensagens diretas em relação ao mural comunitário do website (`profile_scraps`). Criação de fluxo dedicado para a tabela `public.direct_messages` no Supabase com Row Level Security (RLS) restrito estritamente a remetente e destinatário.
+- **Radar de Presença em Tempo Real Dinâmico:** Algoritmo `updateFriendsPresence()` conectado ao evento `sync` do canal Supabase Realtime (`pzhub-global-social`). Aliados online são promovidos em tempo real para o topo da lista de amigos com badge verde neon e atualização dinâmica no cabeçalho do pop-up de DM.
+- **Status Operacional `in_game` vs `online`:** Detecção inteligente de status in-game (`window.__PZHUB_IN_GAME__`), alternando entre "Online no PZHub" e "Em Project Zomboid".
+- **Alerta Acústico Tático Sintetizado (Web Audio API):** Som bi-tonal suave de notificação de alta fidelidade (F#5 a 739.99Hz e C#6 a 1108.73Hz com decaimento suave de 0.28s) reproduzido a cada nova mensagem privada recebida, com 100% de código nativo (zero dependências de assets de áudio externos).
+- **Validação de Integridade por Magic Bytes no Updater Nativo (Rust):** Verificação de cabeçalho binário dos instaladores baixados antes da execução: assinatura PE Executable (`MZ`) e MSI OLE Compound File (`0xD0CF11E0A1B11AE1`). Extermina definitivamente o erro Win32 de "Aplicativo de 16 bits não suportado" decorrente de respostas parciais ou arquivos corrompidos.
+- **Auto-Correção Dinâmica de Extensão de Instalador:** O backend Rust detecta e renomeia automaticamente arquivos entre `.exe` e `.msi` conforme os Magic Bytes reais recebidos.
+- **Compilação e Pacotes Oficiais v2.2.1:** Gerados com sucesso os pacotes `PZHub_2.2.1_x64-setup.exe` (NSIS) e `PZHub_2.2.1_x64_en-US.msi`.
+
+### Corrigido
+- **Falso Online e Nomes Estáticos:** Remoção de dados fictícios no cabeçalho do painel social; agora reflete a sessão real do usuário autenticado no Supabase.
+- **Prevenção de Auto-Notificação:** O sistema ignora transmissões geradas pelo próprio usuário remetente, evitando eco e alertas sonoros indevidos.
+
+## [2.2.0] - 2026-09-09 (Painel Social Riot Client Onipresente, DM Pop-up & Disparo UAC Desanexado)
+
+### Adicionado
+- **Painel Social Global Estilo Riot Client:** Gaveta lateral retrátil (`#riot-social-drawer`) integrada à Topbar com atalho `ESC`, dividida em 3 abas táticas: *Amigos* (com sanfona para offline), *Chat* (conversas recentes) e *Solicitações* (gestão de amizades com badge contador).
+- **Janela Flutuante de DM (Direct Message Pop-up):** Chat direto no canto inferior direito estilo Riot Client com cabeçalho de status, histórico persistente, scroll automático e envio por `Enter`.
+- **Sincronização 100% Real com Supabase:** Consulta e persistência direta nas tabelas `public.profiles` e `public.follows` do ecossistema PZHub.
+- **Disparo de Atualizador com Elevação UAC no Windows:** Execução desanexada via Shell (`cmd.exe /C start ""` e fallback PowerShell `-Verb RunAs`), contornando o erro Win32 `ERROR_ELEVATION_REQUIRED (740)`.
+- **Isolamento de Arquivos Temporários de Update:** Gravação com timestamp atômico (`PZHub_Update_Setup_<timestamp>.exe`) e fechamento prévio de handles de disco antes da inicialização do instalador.
+
 ## [2.1.1] - 2026-09-08 (Auto-Updater Hardening, Master/Main Fallback, Topbar Indicator & Tactical UI)
 
 ### Adicionado

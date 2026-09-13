@@ -5,6 +5,7 @@
 
 import { PZ_MAP_CONFIG, pzToLatLng, latLngToPz, getPzCellInfo, KNOX_TOWNS } from './pz_projection.js';
 import { GpsRoadRouter } from './gps_router.js';
+import { getGtaBlipHtml, GTA_BLIP_COLORS } from './blip_icons.js';
 
 export class PZMapEngine {
   constructor(mapContainerId, onCoordinatesUpdate) {
@@ -30,9 +31,13 @@ export class PZMapEngine {
     this.onGpsUpdate = null;
     this.lastPlayerPos = null;
 
-    // Estado do Mapa
+    // Estado do Mapa - Ativa todas as categorias por padrão para cobertura total (GTA V Blips)
     this.showIsoTiles = true;
-    this.activeCategories = new Set(['police', 'gun', 'medical', 'pharmacy', 'gas', 'hardware', 'grocery', 'fire', 'prison']);
+    this.activeCategories = new Set([
+      'police', 'gun', 'medical', 'pharmacy', 'gas', 'hardware', 'grocery',
+      'fire', 'prison', 'mechanic', 'restaurant', 'bar', 'clothing', 'church',
+      'bank', 'library', 'school', 'motel', 'selfstorage', 'warehouse'
+    ]);
     this.allBuildingsData = [];
     this.categoriesMeta = {};
   }
@@ -253,53 +258,81 @@ export class PZMapEngine {
   }
 
   /**
-   * Renderiza prédios e pontos de loot categorizados com botão de rota
+   * Ajusta o nível de detalhe (LOD) conforme o zoom do mapa
+   */
+  updateLOD() {
+    if (!this.map) return;
+    const zoom = this.map.getZoom();
+
+    // Controle de visibilidade das etiquetas de cidades
+    if (this.townsLayer) {
+      if (zoom >= 11 && zoom <= 18) {
+        if (!this.map.hasLayer(this.townsLayer)) this.townsLayer.addTo(this.map);
+      } else {
+        if (this.map.hasLayer(this.townsLayer)) this.map.removeLayer(this.townsLayer);
+      }
+    }
+
+    // Atualiza os blips de acordo com o zoom
+    this.renderBuildings();
+  }
+
+  /**
+   * Renderiza prédios e pontos de loot categorizados com Blips do GTA V e sistema LOD em 3 Tiers
    */
   renderBuildings() {
     if (this.buildingsLayer) this.map.removeLayer(this.buildingsLayer);
     this.buildingsLayer = L.layerGroup();
 
-    const categoryIcons = {
-      police: '🚓',
-      prison: '🔒',
-      fire: '🚒',
-      medical: '🏥',
-      pharmacy: '💊',
-      gun: '🔫',
-      grocery: '🛒',
-      hardware: '🛠',
-      gas: '⛽',
-      library: '📚',
-      school: '🎓',
-      church: '⛪',
-      bank: '💰',
-      restaurant: '🍔',
-      bar: '🍺',
-      motel: '🛏',
-      warehouse: '🏭',
-    };
+    if (!this.map) return;
+    const zoom = this.map.getZoom();
+
+    // Se o zoom for muito distante (< 13), não renderiza prédios para não poluir o mapa
+    if (zoom < 13) return;
+
+    // Definição dos Tiers de LOD estilo GTA V
+    // Tier 1: Armaria (Ammu-Nation), Delegacias, Hospitais, Postos de Combustível, Bombeiros, Penitenciárias
+    const tier1Cats = new Set(['police', 'prison', 'gun', 'medical', 'gas', 'fire']);
+    // Tier 2: Mecânicos (LS Customs), Mercados/Lojas 24/7, Ferramentas, Farmácias, Bancos
+    const tier2Cats = new Set(['mechanic', 'grocery', 'hardware', 'pharmacy', 'bank']);
 
     this.allBuildingsData.forEach((bld) => {
       if (!this.activeCategories.has(bld.cat)) return;
 
+      const isTier1 = tier1Cats.has(bld.cat);
+      const isTier2 = tier2Cats.has(bld.cat);
+
+      // LOD: Tier 1 (zoom >= 13), Tier 2 (zoom >= 14), Tier 3 (zoom >= 15)
+      if (zoom < 14 && !isTier1) return;
+      if (zoom < 15 && !isTier1 && !isTier2) return;
+
+      const tierClass = isTier1 ? 'tier-1' : (isTier2 ? 'tier-2' : 'tier-3');
       const latlng = pzToLatLng(bld.x, bld.y, 0);
-      const emoji = categoryIcons[bld.cat] || '📍';
-      const label = this.categoriesMeta[bld.cat]?.label || bld.cat;
+      const label = this.categoriesMeta[bld.cat]?.label || bld.cat.toUpperCase();
+      const color = GTA_BLIP_COLORS[bld.cat] || '#ffffff';
+      const blipHtml = getGtaBlipHtml(bld.cat, tierClass);
+
+      const size = isTier1 ? 30 : (isTier2 ? 26 : 22);
+      const anchor = size / 2;
 
       const icon = L.divIcon({
         className: 'poi-building-marker',
-        html: `<span class="poi-emoji">${emoji}</span>`,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
+        html: blipHtml,
+        iconSize: [size, size],
+        iconAnchor: [anchor, anchor],
       });
 
-      const marker = L.marker(latlng, { icon, zIndexOffset: 100 });
+      const zIndex = isTier1 ? 350 : (isTier2 ? 250 : 150);
+      const marker = L.marker(latlng, { icon, zIndexOffset: zIndex });
+
       marker.bindPopup(`
         <div class="tactical-popup">
-          <div class="popup-name">${emoji} ${label}</div>
+          <div class="popup-name" style="color: ${color}; font-weight: 800;">
+            ${label}
+          </div>
           <div class="popup-faction">Localização Estratégica de Loot</div>
           <div class="popup-coords">X: ${Math.round(bld.x)} | Y: ${Math.round(bld.y)}</div>
-          <button class="gps-route-btn" onclick="window.pzSetGps(${bld.x}, ${bld.y}, '${label}')">
+          <button class="gps-route-btn" onclick="window.pzSetGps(${bld.x}, ${bld.y}, '${label.replace(/'/g, "\\'")}')">
             🧭 TRAÇAR ROTA GPS
           </button>
         </div>
@@ -308,9 +341,7 @@ export class PZMapEngine {
       this.buildingsLayer.addLayer(marker);
     });
 
-    if (this.map.getZoom() >= 14) {
-      this.buildingsLayer.addTo(this.map);
-    }
+    this.buildingsLayer.addTo(this.map);
   }
 
   // =========================================================================

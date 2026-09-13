@@ -53,7 +53,26 @@
 - [x] Corrigir especificidade CSS `.tab-pane` eliminando a lacuna de 400px e vazamento de abas.
 - [x] Compilar instaladores finais de release Windows (`.exe` NSIS e `.msi` WiX).
 
-## Próximos Passos (Roadmap v2.2+)
-- [ ] Implementar chat tático direto por texto entre amigos via canais Realtime.
-- [ ] Adicionar notificações nativas do Windows para amigos online.
+## Fase 8: Painel Social Riot Client 1:1, DM Pop-up, Linha Segura & Hardening de Update (v2.2.0 & v2.2.1)
+- [x] Criar gaveta retrátil lateral onipresente (`#riot-social-drawer`) acessível em todas as telas com atalho `ESC`.
+- [x] Implementar janela flutuante de Direct Message (DM Pop-up) no canto inferior direito com histórico persistente e envio via `Enter`.
+- [x] Isolar mensagens privadas com tabela dedicada `public.direct_messages` e RLS restrito a remetente/destinatário (zero vazamento para o mural público `profile_scraps`).
+- [x] Implementar sintetizador sonoro de alerta tático bi-tonal suave (F#5 para C#6) via Web Audio API.
+- [x] Desenvolver algoritmo de presença dinâmica (`updateFriendsPresence`) com promoção de amigos online para o topo e sincronização de status in-game vs desktop.
+- [x] Implementar validação de integridade por Magic Bytes (`MZ` / `OLE`) no auto-updater em Rust para evitar erros Win32 de 16-bits.
+- [x] Adicionar auto-correção de extensão de instalador (`.exe` / `.msi`) e disparo desanexado com elevação UAC.
+- [x] Compilar instaladores oficiais de release Windows v2.2.1 (`PZHub_2.2.1_x64-setup.exe` e `PZHub_2.2.1_x64_en-US.msi`).
+
+## Fase 9: Overhaul de Blips Táticos GTA V & Enriquecimento de POIs (v2.2.2)
+- [x] Criar motor de blips vetoriais SVG de alta resolução (`src/js/blip_icons.js`) baseado na documentação oficial de Blips do GTA V (FiveM / RAGE:MP).
+- [x] Aplicar estética de alto contraste (núcleo chanfrado escuro, borda neon tática e aura de iluminação radial `.poi-blip-gta`).
+- [x] Identificar e enriquecer prédios sem categoria (oficinas mecânicas e funilarias de Fallas Lake, West Point, Muldraugh e Riverside) com nova categoria `mechanic` (Blip 72 - LS Customs).
+- [x] Ativar todas as 20 categorias no motor de mapa (`map_engine.js`), liberando 537+ edifícios que estavam ocultos.
+- [x] Implementar sistema inteligente de LOD em 3 camadas (Tier 1 para serviços vitais a zoom >= 13, Tier 2 para comércio a zoom >= 14, Tier 3 para armazéns a zoom >= 15).
+- [x] Integrar checklist da sidebar (`app.js`) com 18 categorias completas e conectar evento de toggle diretamente a `mapEngine.toggleCategory()`.
+
+## Próximos Passos (Roadmap v2.4+)
+- [ ] Adicionar notificações nativas do Windows para novos operadores e mensagens quando minimizado.
+- [ ] Implementar transmissão de waypoints e marcações táticas personalizadas no mapa entre amigos online via canais Realtime.
 - [ ] Desenvolver verificador de integridade e incompatibilidade de mods no scanner local.
+- [ ] Integrar chamadas de voz táticas (estilo rádio militar com chiado e ruído configurável).

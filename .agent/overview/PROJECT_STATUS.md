@@ -4,7 +4,7 @@
 PZHub Desktop (Tactical Live Radar, Modpack Manager & Operations Suite)
 
 ## Description
-Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar e gerenciamento para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O ecossistema integra motor de mapa isométrico 1:1 de Knox County com cache de tiles em disco gerenciado pelo Rust, telemetria e radar ao vivo via mini-mod Lua, navegação GPS A* por malha viária oficial de 1.098 ruas, catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`) e descompactação assíncrona de `.zip`, scanner local de mods com alternância Grade ⊞ / Lista ☰, autenticação integrada com Supabase Auth/PostgreSQL, painel social global estilo Riot Client (com gaveta retrátil, lista de amigos, DM pop-up em tempo real e gestão de solicitações conectado ao banco de dados do website), botão hero de lançamento na Steam com injeção de parâmetros JVM de memória RAM no `ProjectZomboid64.json` e sistema de auto-atualização blindado (v2.2.0) com download em streaming, elevação UAC nativa no Windows e fallback dinâmico de branches (`master`/`main`).
+Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar e gerenciamento para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O ecossistema integra motor de mapa isométrico 1:1 de Knox County com cache de tiles em disco gerenciado pelo Rust, telemetria e radar ao vivo via mini-mod Lua, navegação GPS A* por malha viária oficial de 1.098 ruas, catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`) e descompactação assíncrona de `.zip`, scanner local de mods com alternância Grade ⊞ / Lista ☰, autenticação integrada com Supabase Auth/PostgreSQL, painel social global estilo Riot Client (com gaveta retrátil, lista de amigos, DM pop-up em tempo real, som de notificação Web Audio API e gestão de solicitações conectado ao banco de dados do website), botão hero de lançamento na Steam com injeção de parâmetros JVM de memória RAM no `ProjectZomboid64.json` e sistema de auto-atualização blindado (v2.2.1) com validação binária por Magic Bytes, download em streaming, elevação UAC nativa no Windows e fallback dinâmico de branches (`master`/`main`).
 
 ## Tech Stack
 - **Languages:** Rust 1.94+ (Edition 2021), JavaScript (ES2023 Modules), Lua 5.1/JIT (PZ Modding API), HTML5, CSS3, SQL (PostgreSQL DDL/RLS)
@@ -57,6 +57,7 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   ├── js/
 │   │   ├── app.js                           # Controlador principal, router de views e inicialização de subsistemas
 │   │   ├── auth.js                          # Autenticação e perfis sincronizados com Supabase Auth
+│   │   ├── blip_icons.js                    # Motor vetorial de Blips GTA V (FiveM/RAGE:MP) com 20 categorias e paleta tática
 │   │   ├── friends_manager.js               # Painel social local legado do radar
 │   │   ├── gps_router.js                    # A* Pathfinding viário e cálculo de distâncias
 │   │   ├── i18n.js                          # Dicionários de tradução (PT-BR, EN-US, ES-ES)
@@ -106,9 +107,9 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 
 ## Key Files
 - `src-tauri/src/lib.rs`: Registra todos os comandos nativos expostos ao frontend (cache de tiles, telemetria, janelas, scanner de mods, modpacks, launcher de RAM, manifesto remoto e auto-updater).
-- `src-tauri/src/updater.rs`: Motor de download em streaming de patch via `reqwest` com emissão contínua de eventos de progresso, criação de binários temporários seguros com timestamp (`PZHub_Update_Setup_<timestamp>.exe`), disparo desanexado com elevação UAC via `cmd.exe /C start ""` e fallback PowerShell `-Verb RunAs`, e função `fetch_update_manifest` com normalização de URL e auto-fallback resiliente entre branches `master` e `main` em caso de erro HTTP 404.
+- `src-tauri/src/updater.rs`: Motor de download em streaming de patch via `reqwest` com emissão contínua de eventos de progresso, validação rigorosa de integridade binária por Magic Bytes (PE `MZ` e MSI OLE `0xD0...`) para eliminar o erro de 16 bits do Windows, auto-correção dinâmica de extensão (`.exe` vs `.msi`), criação de binários temporários seguros com timestamp (`PZHub_Update_Setup_<timestamp>.<ext>`), disparo desanexado com elevação UAC via `cmd.exe /C start ""` e fallback PowerShell `-Verb RunAs`, e função `fetch_update_manifest` com normalização de URL e auto-fallback resiliente entre branches `master` e `main` em caso de erro HTTP 404.
 - `src/js/updater.js`: Orquestrador completo de atualização no frontend. Consulta o manifesto oficial no GitHub Raw, gerencia a persistência da última verificação no `localStorage`, dispara eventos customizados (`updater-check-success`, `updater-check-failed`), controla os Toasts Táticos (`showTacticalToast`) e os Modais Táticos (`#tactical-update-modal` e `#tactical-version-modal`) com suporte a classes `.visible` e `.active`, barra de progresso em tempo real e link de contingência no navegador via `tauri-plugin-opener`.
-- `src/js/social_manager.js`: Gerenciador do Painel Social Global Estilo Riot Client. Controla a gaveta lateral onipresente (`#riot-social-drawer`), 3 abas segmentadas (Amigos, Chat Direto e Solicitações), isolamento total de mensagens na tabela `direct_messages` (sem vazar para o mural do website), áudio tático Web Audio API, presença dinâmica e canal WebSocket Realtime compartilhado (`pzhub-global-social`).
+- `src/js/social_manager.js`: Gerenciador do Painel Social Global Estilo Riot Client. Controla a gaveta lateral onipresente (`#riot-social-drawer`), 3 abas segmentadas (Amigos, Chat Direto e Solicitações), isolamento total de mensagens na tabela `direct_messages` (sem vazar para o mural do website), sintetizador acústico Web Audio API (F#5 para C#6), presença dinâmica (`updateFriendsPresence`) com promoção de aliados online e canal WebSocket Realtime compartilhado (`pzhub-global-social`).
 - `src-tauri/src/launcher.rs`: Localiza as pastas de instalação do Project Zomboid no Windows, injeta a configuração de memória RAM (`-Xmx` e `-Xms`) diretamente no `ProjectZomboid64.json` e dispara a inicialização do jogo via Steam (`steam://run/108600`) com fallback para o executável nativo.
 - `src/js/launcher.js`: Gerenciador frontend do botão hero "JOGAR" no cabeçalho superior e menu dropdown tático para seleção de memória RAM (4GB a 32GB) com persistência em `localStorage`.
 - `src/js/auth.js`: Autenticação completa via Supabase, gestão de sessão persistente, perfil de operador (`profiles`), menu de contexto de perfil e sincronização com cabeçalho superior e painel social.
@@ -122,9 +123,11 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 1. **Auto-Updater Blindado & Execução de Patch (v2.2.1):**
    - **Endpoint Oficial:** Apontado para `https://raw.githubusercontent.com/pauloviccs/PZHub/master/latest.json`.
    - **Auto-Fallback Inteligente:** Mecanismo duplo (Rust nativo + JS fetch) com failover automático entre `master` e `main`.
+   - **Validação de Integridade por Magic Bytes:** Leitura de cabeçalho binário dos arquivos baixados para verificação de assinaturas PE Executable (`MZ`) e MSI OLE Compound File (`0xD0CF11E0A1B11AE1`). Impede categoricamente o erro Win32 de "Aplicativo de 16 bits não suportado" decorrente de respostas parciais ou HTMLs de erro do servidor.
+   - **Auto-Correção Dinâmica de Extensão:** Detecta se a URL apontou para `.exe` mas o binário é `.msi` (ou vice-versa), renomeando o arquivo antes do disparo.
    - **Correção da Camada Visual:** Modais táticos com suporte bidirecional para as classes `.visible` e `.active`, eliminando o problema de modais invisíveis.
    - **Disparo Seguro com UAC no Windows:** Execução do instalador via Shell nativa (`cmd.exe /C start ""` e fallback PowerShell `-Verb RunAs`), permitindo que o diálogo de confirmação de Administrador do Windows seja exibido sem gerar o erro Win32 `ERROR_ELEVATION_REQUIRED (740)`.
-   - **Arquivos Temporários Isolados:** Criação de binários no `%TEMP%` com sufixo timestamp (`PZHub_Update_Setup_<timestamp>.exe`), impedindo erros de arquivo travado.
+   - **Arquivos Temporários Isolados:** Criação de binários no `%TEMP%` com sufixo timestamp (`PZHub_Update_Setup_<timestamp>.<ext>`), impedindo erros de arquivo travado.
    - **Encerramento Atômico:** Aguardo de 1 segundo para spawn do instalador antes do `exit(0)` do PZHub antigo, liberando DLLs e arquivos para substituição imediata.
    - **Fallback de Download no Navegador:** Link de contingência aberto diretamente no navegador padrão via `tauri-plugin-opener` caso o download nativo encontre oscilações de rede.
 
@@ -136,8 +139,8 @@ VICCS_PZHub/ (Desktop App Workspace Root)
      - *Solicitações:* Gestão de amizades pendentes com busca de operadores por Nome + Tagline (`VICCS#BR1`), botões de Aceitar (verde) e Recusar (vermelho).
    - **Janela Flutuante de DM (Direct Message Pop-up):** Janela de chat estilo Riot Client posicionada no canto inferior direito com cabeçalho de status, histórico persistente com aviso de retenção de 30 dias, scroll automático e envio com a tecla Enter.
    - **Isolamento de Mensagens Privadas:** Persistência em `public.direct_messages` com RLS rígido, eliminando 100% o vazamento de DMs para o mural de recados (`profile_scraps`) do site.
-   - **Notificação Sonora Tática:** Áudio bi-tonal sintetizado via Web Audio API (F#5 para C#6 com decaimento suave de 0.28s) acionado a cada nova mensagem recebida.
-   - **Presença Real e Dinâmica:** Canal unificado `pzhub-global-social`, eliminação do cabeçalho estático e re-avaliação imediata de status dos amigos ao sincronizar a presença.
+   - **Notificação Sonora Tática:** Áudio bi-tonal sintetizado via Web Audio API (F#5 para C#6 com decaimento suave de 0.28s) acionado a cada nova mensagem recebida de terceiros.
+   - **Presença Real e Dinâmica:** Algoritmo `updateFriendsPresence()` acionado no evento `sync` do canal WebSocket Realtime (`pzhub-global-social`), promovendo amigos ativos para o topo da lista e atualizando o status do chat em tempo real.
 
 3. **Autenticação e Perfis Sincronizados com Supabase:**
    - Modal nativo de Login e Cadastro de Operador sincronizado com o banco oficial do PZHub Website (`https://legqoupwzpdzqqhwuwwv.supabase.co`).
@@ -167,10 +170,22 @@ VICCS_PZHub/ (Desktop App Workspace Root)
    - Scanner assíncrono de mods locais em `%USERPROFILE%/Zomboid/mods` e Steam Workshop (`108600`).
    - Modal tático de detalhes com Markdown renderizado, changelogs e comentários.
 
-9. **Binários e Instaladores Oficiais Gerados (v2.2.0):**
-   - `src-tauri/target/release/bundle/nsis/PZHub_2.2.0_x64-setup.exe` (Instalador NSIS Oficial v2.2.0)
-   - `src-tauri/target/release/bundle/msi/PZHub_2.2.0_x64_en-US.msi` (Instalador MSI v2.2.0)
-   - `src-tauri/target/release/tauri-app.exe` (Executável Stand-alone v2.2.0)
+9. **Binários e Instaladores Oficiais Gerados (v2.2.2 & v2.2.1):**
+   - `src-tauri/target/release/bundle/nsis/PZHub_2.2.2_x64-setup.exe` (Instalador NSIS Oficial v2.2.2 - 4.3 MB)
+   - `src-tauri/target/release/tauri-app.exe` (Executável Stand-alone Release v2.2.2 - 13.5 MB)
+   - `src-tauri/target/release/bundle/nsis/PZHub_2.2.1_x64-setup.exe` (Instalador NSIS Oficial v2.2.1 - 4.3 MB)
+   - `src-tauri/target/release/bundle/msi/PZHub_2.2.1_x64_en-US.msi` (Instalador MSI Corporativo v2.2.1 - 5.9 MB)
+
+10. **Overhaul de Blips Táticos GTA V & Enriquecimento de POIs (v2.2.2):**
+    - **Motor Vetorial SVG Estilo GTA V (`src/js/blip_icons.js`):** 20 ícones táticos de alta precisão baseados na documentação FiveM/RAGE:MP (Pistola Ammu-Nation #110, Escudo LSPD #60, Cruz Hospital #61, Pílula Farmácia #51, Chave LS Customs #72, Cifrão Loja 24/7 #52, Bomba Gasolina #361, Spiffo #93, Martelo Hardware #402, etc.).
+    - **Estética de Alto Contraste & Efeito Neon Tático (`src/css/map.css`):** Estrutura `.poi-blip-gta` com fundo escuro chanfrado, borda com cor característica de cada blip, aura luminescente e animação de escala suave (`scale(1.35)`) no hover.
+    - **Enriquecimento da Base de Dados (`src/data/buildings_index.json` & `meta.json`):** Adição oficial da categoria `mechanic` (`#ffa502`) e catalogação de oficinas mecânicas e funilarias (Fallas Lake `28_32_14-17`, West Point, Muldraugh e Riverside), totalizando 1.017 edifícios mapeados.
+    - **Desbloqueio de 537+ Edifícios Ocultos no Mapa:** Expansão de `activeCategories` de 9 para 20 categorias no `map_engine.js`.
+    - **Sistema Inteligente de LOD em 3 Camadas:**
+      - *Tier 1 (Zoom >= 13):* Serviços vitais (Armarias, Delegacias, Hospitais, Bombeiros, Oficinas, Postos) com 30px.
+      - *Tier 2 (Zoom >= 14):* Comércio essencial (Supermercados, Farmácias, Ferramentas, Roupas, Restaurantes, Bancos) com 26px.
+      - *Tier 3 (Zoom >= 15):* Galpões, Armazéns, Escolas e Motéis com 22px.
+    - **Sincronização de Filtros na Sidebar (`src/js/app.js`):** Lista de 18 categorias táticas com badges de cor e conexão direta com `mapEngine.toggleCategory()`.
 
 ## Work-in-Progress Items
 - Transmissão de waypoints e marcações táticas personalizadas no mapa entre amigos online via canal Realtime.

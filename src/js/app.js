@@ -577,12 +577,24 @@ class App {
     if (!container) return;
 
     const categories = [
-      { id: 'police', label: 'Delegacias & Armarias', color: '#3498db' },
-      { id: 'medical', label: 'Hospitais & Clínicas', color: '#e74c3c' },
-      { id: 'food', label: 'Mercados & Restaurantes', color: '#f39c12' },
-      { id: 'hardware', label: 'Ferramentas & Depósitos', color: '#95a5a6' },
-      { id: 'gas', label: 'Postos de Combustível', color: '#e67e22' },
-      { id: 'gunstore', label: 'Lojas de Armas', color: '#c0392b' },
+      { id: 'gun', label: 'Armarias (Ammu-Nation)', color: '#ff4757' },
+      { id: 'police', label: 'Polícia & Prisões', color: '#2e86de' },
+      { id: 'medical', label: 'Hospitais & Clínicas', color: '#2ed573' },
+      { id: 'pharmacy', label: 'Farmácias', color: '#ff6b81' },
+      { id: 'mechanic', label: 'Oficinas & Peças (LS Customs)', color: '#ffa502' },
+      { id: 'gas', label: 'Postos de Combustível', color: '#00d2d3' },
+      { id: 'grocery', label: 'Mercados & Conveniência 24/7', color: '#eccc68' },
+      { id: 'hardware', label: 'Ferramentas & Construção', color: '#10ac84' },
+      { id: 'restaurant', label: 'Restaurantes & Spiffo', color: '#ff7f50' },
+      { id: 'bar', label: 'Bares & Bebidas', color: '#f39c12' },
+      { id: 'clothing', label: 'Roupas & Acessórios', color: '#a55eea' },
+      { id: 'warehouse', label: 'Galpões & Indústrias', color: '#57606f' },
+      { id: 'fire', label: 'Bombeiros', color: '#eb4d4b' },
+      { id: 'bank', label: 'Bancos & Finanças', color: '#1dd1a1' },
+      { id: 'church', label: 'Igrejas', color: '#ced6e0' },
+      { id: 'library', label: 'Bibliotecas & Livros', color: '#c8d6e5' },
+      { id: 'school', label: 'Escolas & Faculdades', color: '#ff9f43' },
+      { id: 'motel', label: 'Hotéis & Motéis', color: '#48dbfb' },
     ];
 
     container.innerHTML = categories
@@ -603,8 +615,8 @@ class App {
       chk.addEventListener('change', (e) => {
         const catId = e.target.dataset.cat;
         const enabled = e.target.checked;
-        if (this.overlayController) {
-          this.overlayController.toggleCategory(catId, enabled);
+        if (this.mapEngine) {
+          this.mapEngine.toggleCategory(catId, enabled);
         }
       });
     });

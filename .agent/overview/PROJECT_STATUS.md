@@ -4,7 +4,7 @@
 PZHub Desktop (Tactical Live Radar, Modpack Manager & Operations Suite)
 
 ## Description
-Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar e gerenciamento para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O ecossistema integra motor de mapa isométrico 1:1 de Knox County com cache de tiles em disco gerenciado pelo Rust, telemetria e radar ao vivo via mini-mod Lua, navegação GPS A* por malha viária oficial de 1.098 ruas, catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`) e descompactação assíncrona de `.zip`, scanner local de mods com alternância Grade ⊞ / Lista ☰, autenticação integrada com Supabase Auth/PostgreSQL, painel social global estilo Riot Client (com gaveta retrátil, lista de amigos, DM pop-up em tempo real, som de notificação Web Audio API e gestão de solicitações conectado ao banco de dados do website), botão hero de lançamento na Steam com injeção de parâmetros JVM de memória RAM no `ProjectZomboid64.json` e sistema de auto-atualização blindado (v2.2.1) com validação binária por Magic Bytes, download em streaming, elevação UAC nativa no Windows e fallback dinâmico de branches (`master`/`main`).
+Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar e gerenciamento para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O ecossistema integra motor de mapa isométrico 1:1 de Knox County com cache de tiles em disco gerenciado pelo Rust, motor de Blips táticos vetoriais SVG estilo GTA V (FiveM / RAGE:MP) com 20 categorias e sistema de LOD em 3 camadas, malha de 1.017 POIs enriquecidos (incluindo oficinas mecânicas de Fallas Lake, West Point, Muldraugh e Riverside), telemetria e radar ao vivo via mini-mod Lua, navegação GPS A* por malha viária oficial de 1.098 ruas, catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`) e descompactação assíncrona de `.zip`, scanner local de mods com alternância Grade ⊞ / Lista ☰, autenticação integrada com Supabase Auth/PostgreSQL, painel social global estilo Riot Client (com gaveta retrátil, lista de amigos, DM pop-up em tempo real, som de notificação Web Audio API e gestão de solicitações conectado ao banco de dados do website), botão hero de lançamento na Steam com injeção de parâmetros JVM de memória RAM no `ProjectZomboid64.json` e sistema de auto-atualização blindado (v2.2.2) com validação binária por Magic Bytes, download em streaming, elevação UAC nativa no Windows e fallback dinâmico de branches (`master`/`main`).
 
 ## Tech Stack
 - **Languages:** Rust 1.94+ (Edition 2021), JavaScript (ES2023 Modules), Lua 5.1/JIT (PZ Modding API), HTML5, CSS3, SQL (PostgreSQL DDL/RLS)
@@ -35,6 +35,8 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   └── PROJECT_STATUS.md                # Visão geral unificada e status do projeto
 │   └── updates/
 │       └── PATCH_NOTES.md                   # Notas de atualização imersivas (estilo Riot Games)
+├── scripts/                                 # Scripts utilitários de manutenção
+│   └── enrich_pois.js                       # Telemetria e enriquecimento de edificações do mapa
 ├── server-mod/                              # Mini-mod Lua para Project Zomboid (B41 & B42)
 │   ├── 42/                                  # Implementação específica para Build 42
 │   ├── common/                              # Scripts compartilhados entre versões
@@ -47,10 +49,10 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   ├── assets/                              # Ícones, logotipos vetoriais e ilustrações SVG
 │   ├── css/
 │   │   ├── main.css                         # Design System Tarkov, Toasts Táticos, Modais e Riot Client Drawer
-│   │   └── map.css                          # Estilos táticos de Radar, HUD, camadas e Leaflet
+│   │   └── map.css                          # Estilos táticos de Radar, Blips GTA V, HUD, camadas e Leaflet
 │   ├── data/
-│   │   ├── buildings_index.json             # Índice de edificações de Knox County
-│   │   ├── meta.json                        # Metadados de projeção e limites do mapa
+│   │   ├── buildings_index.json             # Índice de edificações de Knox County (1.017 POIs)
+│   │   ├── meta.json                        # Metadados de projeção e categorias de POIs
 │   │   ├── streets.json                     # Malha viária oficial (1.098 segmentos de ruas)
 │   │   ├── worldmap_forest.json             # Vetores de áreas de mata e floresta
 │   │   └── worldmap_water.json              # Vetores de rios e massas d'água
@@ -63,7 +65,7 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   ├── i18n.js                          # Dicionários de tradução (PT-BR, EN-US, ES-ES)
 │   │   ├── launcher.js                      # Lançador Steam com seletor de alocação de memória RAM
 │   │   ├── local_mods_scanner.js            # Scanner com modos Grade ⊞ e Lista ☰ de auditoria
-│   │   ├── map_engine.js                    # Motor isométrico 1:1 Knox County com Z-levels 0 a 7
+│   │   ├── map_engine.js                    # Motor isométrico 1:1 Knox County com Z-levels 0 a 7 e LOD
 │   │   ├── markdown_parser.js               # Parser e sanitizador Markdown nativo zero-dependency
 │   │   ├── modpack_manager.js               # Gerenciador de Modpacks conectado ao Supabase
 │   │   ├── overlay.js                       # HUD flutuante e atalhos globais
@@ -94,14 +96,15 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   ├── mod_manager.rs                   # Varredura do filesystem, unzip assíncrono e Steam
 │   │   ├── tracker.rs                       # Leitura segura de telemetria local e estado offline
 │   │   └── updater.rs                       # Downloader nativo em streaming, elevação UAC e consulta de manifesto
-│   ├── target/release/bundle/               # Pacotes de distribuição oficiais gerados (v2.2.1)
+│   ├── target/release/bundle/               # Pacotes de distribuição oficiais gerados
+│   │   ├── nsis/PZHub_2.2.2_x64-setup.exe   # Instalador oficial NSIS v2.2.2 (4.3 MB)
 │   │   ├── nsis/PZHub_2.2.1_x64-setup.exe   # Instalador oficial NSIS v2.2.1
 │   │   └── msi/PZHub_2.2.1_x64_en-US.msi    # Pacote MSI v2.2.1
-│   ├── Cargo.toml                           # Dependências e manifesto Rust (v2.2.1)
-│   └── tauri.conf.json                      # Configuração de janelas, permissões e empacotamento (v2.2.1)
+│   ├── Cargo.toml                           # Dependências e manifesto Rust (v2.2.2)
+│   └── tauri.conf.json                      # Configuração de janelas, permissões e empacotamento (v2.2.2)
 ├── download_data.js                         # Utilitário para download de mapas e vetores oficiais
-├── latest.json                              # Manifesto oficial de release remoto (v2.2.1)
-├── package.json                             # Scripts npm e dependências de frontend (v2.2.1)
+├── latest.json                              # Manifesto oficial de release remoto (v2.2.2)
+├── package.json                             # Scripts npm e dependências de frontend (v2.2.2)
 └── README.md                                # Apresentação do projeto
 ```
 

@@ -776,19 +776,28 @@ export async function executeModpackInstallation(pack) {
     await new Promise(r => setTimeout(r, 350));
   }
 
-  // Telemetria de Download no Supabase
+  // Telemetria Atômica de Download no Supabase via RPC (Ignora bloqueio de RLS)
   if (successCount > 0 && pack.is_cloud) {
     try {
-      fetch(`${SUPABASE_PROJECT_URL}/rest/v1/modpacks?id=eq.${pack.id}`, {
-        method: 'PATCH',
+      fetch(`${SUPABASE_PROJECT_URL}/rest/v1/rpc/increment_modpack_download`, {
+        method: 'POST',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ downloads_count: (pack.downloads_count || 0) + 1 })
-      }).then();
+        body: JSON.stringify({ target_pack_id: pack.id })
+      })
+      .then(res => res.json())
+      .then(newCount => {
+        if (newCount !== null && newCount !== undefined && !newCount.error) {
+          pack.downloads_count = Number(newCount);
+          const downloadsEl = document.getElementById('desk-modal-downloads');
+          if (downloadsEl) downloadsEl.textContent = `🚀 ${Number(newCount).toLocaleString('pt-BR')} Downloads`;
+          console.log(`[PZHub Telemetry] Download do modpack ${pack.name} registrado com sucesso. Novo total: ${newCount}`);
+        }
+      })
+      .catch(err => console.warn('[Telemetry] Erro ao registrar telemetria do modpack:', err));
     } catch(e) {}
   }
 

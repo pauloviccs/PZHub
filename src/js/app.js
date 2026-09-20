@@ -16,6 +16,7 @@ import { initLauncher } from './launcher.js';
 import { initAuth } from './auth.js';
 import { initSocialManager } from './social_manager.js';
 import { BroadcastingEngine } from './broadcasting_engine.js';
+import { supabase, isConfigured, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabaseClient.js';
 
 class App {
   constructor() {
@@ -47,6 +48,7 @@ class App {
     await initLocalModsScanner();
     await initModpackManager();
     this.updateHubMetrics();
+    this.setupRealtimeDownloads();
     this.initHubModpackShowcase();
 
     // 2.1 Inicializa o Steam Game Launcher e a Autenticação Supabase
@@ -464,11 +466,54 @@ class App {
     }
   }
 
-  updateHubMetrics() {
+  async updateHubMetrics() {
     const modsCountEl = document.getElementById('hub-mods-count');
     const localMods = getLocalModsList();
     if (modsCountEl) {
       modsCountEl.textContent = `${localMods.length} INSTALADOS`;
+    }
+
+    const downloadsEl = document.getElementById('hub-global-downloads-count');
+    if (downloadsEl) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/app_analytics?id=eq.pzhub_desktop&select=total_downloads`, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+        const data = await res.json();
+        if (Array.isArray(data) && data[0] && data[0].total_downloads !== undefined) {
+          downloadsEl.textContent = Number(data[0].total_downloads).toLocaleString('pt-BR');
+        }
+      } catch (e) {
+        if (downloadsEl.textContent === '...') downloadsEl.textContent = '--';
+      }
+    }
+  }
+
+  setupRealtimeDownloads() {
+    if (!isConfigured || !supabase) return;
+    try {
+      supabase
+        .channel('pzhub-desktop-downloads-sync')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_analytics' }, (payload) => {
+          if (payload.new && payload.new.total_downloads !== undefined) {
+            const el = document.getElementById('hub-global-downloads-count');
+            if (el) el.textContent = Number(payload.new.total_downloads).toLocaleString('pt-BR');
+          }
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'modpacks' }, (payload) => {
+          if (payload.new && payload.new.id) {
+            const downloadsEl = document.getElementById('desk-modal-downloads');
+            if (downloadsEl && payload.new.downloads_count !== undefined) {
+              downloadsEl.textContent = `🚀 ${Number(payload.new.downloads_count).toLocaleString('pt-BR')} Downloads`;
+            }
+          }
+        })
+        .subscribe();
+    } catch (e) {
+      console.warn('[Realtime] Falha ao assinar canal de downloads no Desktop:', e);
     }
   }
 

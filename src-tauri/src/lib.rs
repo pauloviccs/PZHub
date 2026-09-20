@@ -5,6 +5,7 @@ pub mod mod_installer;
 pub mod mod_manager;
 pub mod updater;
 pub mod launcher;
+pub mod broadcasting;
 
 use tauri::Manager;
 use cache::{fetch_tile_cached, calculate_cache_stats, clear_cache, CacheStats};
@@ -17,6 +18,7 @@ use mod_manager::{
 };
 use updater::{download_and_run_installer, fetch_update_manifest};
 use launcher::launch_game;
+use broadcasting::{is_broadcasting_mod_installed, read_broadcasting_json, set_pip_visible};
 
 #[tauri::command]
 async fn get_tile(layer: String, z: u32, x: u32, y: u32) -> Result<String, String> {
@@ -199,6 +201,21 @@ fn launch_project_zomboid(ram_gb: u32) -> Result<String, String> {
     launch_game(cfg.allocated_ram_gb)
 }
 
+#[tauri::command]
+fn check_broadcasting_installed() -> bool {
+    is_broadcasting_mod_installed()
+}
+
+#[tauri::command]
+fn get_broadcasting_data() -> Option<String> {
+    read_broadcasting_json()
+}
+
+#[tauri::command]
+fn set_pip_window_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
+    set_pip_visible(&app, visible)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -229,7 +246,10 @@ pub fn run() {
             open_zomboid_mods_dir,
             download_and_run_installer,
             fetch_update_manifest,
-            launch_project_zomboid
+            launch_project_zomboid,
+            check_broadcasting_installed,
+            get_broadcasting_data,
+            set_pip_window_visible
         ])
         .run(tauri::generate_context!())
         .expect("error while running PZHub tauri application");

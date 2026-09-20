@@ -1,8 +1,8 @@
 {
-  "version": "2.2.2",
-  "name": "PZHub Tactical Patch v2.2.2",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.2/PZHub_2.2.2_x64-setup.exe",
-  "notes": "### PZHub Tactical Patch v2.2.2\n\n- **Overhaul de Blips GTA V:** Substituição de emojis por ícones vetoriais SVG de alta resolução baseados na documentação oficial de Blips do GTA V (FiveM/RAGE:MP).\n- **Fim dos Buracos no Mapa:** Mapeamento e catalogação oficial de oficinas mecânicas e funilarias em Fallas Lake, West Point, Muldraugh e Riverside (1.017 prédios no índice).\n- **Desbloqueio de 537+ Prédios:** Ativação de todas as 20 categorias do mapa por padrão.\n- **Sistema LOD em 3 Camadas:** Zoom dinâmico que prioriza serviços vitais e evita poluição visual no radar.",
-  "pub_date": "2026-09-13T03:00:00Z",
+  "version": "2.2.3",
+  "name": "PZHub Tactical Patch v2.2.3",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.3/PZHub_2.2.3_x64-setup.exe",
+  "notes": "### PZHub Update 2.2.3, I'ts Music Time!\n\n- **Novo Motor de Transmissão Multimídia (Aba 05):** Conexão em segundo plano com o mod VICCS Broadcasting do Project Zomboid.\n- **Janela Flutuante PiP para Televisores:** Exibição de vídeo Always-on-Top sincronizado com TVs in-game com filtro CRT retrô.\n- **Player Oculto & Leve:** Reprodução de áudio espacial 3D em segundo plano sem necessidade de controle manual.\n- **Sincronização Multiplayer:** Sincronização temporal de reprodução baseada em timestamps mundiais.",
+  "pub_date": "2026-09-20T14:00:00Z",
   "mandatory": false
 }

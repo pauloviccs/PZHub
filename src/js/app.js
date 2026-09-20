@@ -15,6 +15,7 @@ import { checkForAppUpdates, getLastUpdateCheck, updateTopbarIndicator } from '.
 import { initLauncher } from './launcher.js';
 import { initAuth } from './auth.js';
 import { initSocialManager } from './social_manager.js';
+import { BroadcastingEngine } from './broadcasting_engine.js';
 
 class App {
   constructor() {
@@ -30,6 +31,7 @@ class App {
     this.showcaseIndex = 0;
     this.showcaseTimer = null;
     this.showcaseModpacks = [];
+    this.broadcastingEngine = null;
   }
 
   async init() {
@@ -53,6 +55,10 @@ class App {
 
     // 2.2 Inicializa o Painel Social Global Estilo Riot Client & Chat
     await initSocialManager();
+
+    // 2.3 Inicializa o Motor de Transmissão Multimídia (VICCS Broadcasting)
+    this.broadcastingEngine = new BroadcastingEngine();
+    await this.broadcastingEngine.init();
 
     // 3. Inicializa o motor de mapa Leaflet (em segundo plano)
     this.mapEngine = new PZMapEngine('map', (telemetry) => {
@@ -294,6 +300,11 @@ class App {
           this.mapEngine.map.invalidateSize();
         }
       }, 100);
+    }
+
+    // Se estiver na transmissão, re-valida status do mod
+    if (viewId === 'view-broadcasting' && this.broadcastingEngine) {
+      this.broadcastingEngine.checkModStatus();
     }
   }
 

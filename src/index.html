@@ -103,6 +103,11 @@
             <span class="tab-label" data-i18n="tab_map">MAPA & RADAR</span>
             <span class="tab-label-short">RADAR</span>
           </button>
+          <button class="tarkov-tab" data-view="view-broadcasting" title="Motor de Transmissão Multimídia">
+            <span class="tab-index">05</span>
+            <span class="tab-label" data-i18n="tab_broadcasting">TRANSMISSÃO</span>
+            <span class="tab-label-short">MÍDIA</span>
+          </button>
         </nav>
 
         <!-- 3. ZONA DIREITA: PERFIL SUPABASE + CONTROLES DE SISTEMA -->
@@ -780,6 +785,140 @@
             </button>
           </footer>
         </section>
+
+        <!-- =================================================== -->
+        <!-- VIEW 5: MOTOR DE TRANSMISSÃO & MÍDIA (VICCS)      -->
+        <!-- =================================================== -->
+        <section id="view-broadcasting" class="app-view">
+          <div class="broadcasting-view-container">
+            <!-- Header Tático -->
+            <div class="broadcasting-header">
+              <div class="broadcasting-header-left">
+                <div class="section-tag">SUBSISTEMA DE ÁUDIO 3D & VÍDEO SINCRONIZADO</div>
+                <h2 class="section-title">MOTOR DE TRANSMISSÃO // VICCS BROADCASTING</h2>
+                <p class="section-desc">
+                  O PZHub atua como motor externo de alta fidelidade para rádios, televisões e aparelhos de som. 
+                  O controle de mídia (Play, Pause, Links) permanece 100% de dentro do jogo.
+                </p>
+              </div>
+              <div class="broadcasting-header-right">
+                <div id="broadcasting-engine-status-badge" class="tactical-badge badge-muted">
+                  <span class="status-dot"></span> MOTOR DESLIGADO
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Principal: Detecção do Mod & Chave Geral -->
+            <div id="broadcasting-mod-status-card" class="broadcasting-card master-card">
+              <div class="master-card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📻</span>
+                  <div>
+                    <h3 class="card-title">CONEXÃO COM O PROJECT ZOMBOID</h3>
+                    <p id="broadcasting-toggle-desc" class="card-subtitle">
+                      Verificando instalação do mod nos diretórios do jogo...
+                    </p>
+                  </div>
+                </div>
+                <div id="broadcasting-mod-detected-badge" class="tactical-badge badge-warning">
+                  <span class="status-dot"></span> VERIFICANDO...
+                </div>
+              </div>
+
+              <div class="master-switch-row">
+                <div class="switch-meta">
+                  <span class="switch-title">HABILITAR SINCRONIZAÇÃO AUTOMÁTICA</span>
+                  <span class="switch-sub">Ao ligar qualquer rádio ou TV in-game, o áudio toca em segundo plano sem necessidade de interação extra.</span>
+                </div>
+                <label class="tactical-toggle-switch">
+                  <input type="checkbox" id="broadcasting-master-toggle" disabled />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+
+              <div class="master-card-footer">
+                <button id="btn-broadcasting-action" class="tactical-btn" style="display: none;">
+                  ABRIR PASTA DE MODS
+                </button>
+              </div>
+            </div>
+
+            <!-- Grade de Monitoramento & Telemetria em Tempo Real -->
+            <div class="broadcasting-grid">
+              <!-- Painel da Esquerda: Sinal In-Game & Áudio Espacial -->
+              <div class="broadcasting-card">
+                <div class="card-header-slim">
+                  <span class="card-header-tag">TELEMETRIA ATIVA // DISPOSITIVO MAIS AUDÍVEL</span>
+                  <span id="telemetry-bridge-status" class="bridge-tag">STANDBY</span>
+                </div>
+
+                <div class="telemetry-display-box">
+                  <div class="telemetry-row">
+                    <span class="t-label">APARELHO:</span>
+                    <span id="telemetry-device-type" class="t-value highlight">NENHUM APARELHO EM REPRODUÇÃO</span>
+                  </div>
+                  <div class="telemetry-row">
+                    <span class="t-label">POSIÇÃO / DISTÂNCIA:</span>
+                    <span id="telemetry-device-coords" class="t-value mono">X: -- | Y: -- | Z: --</span>
+                  </div>
+                  <div class="telemetry-row">
+                    <span class="t-label">STREAM URL:</span>
+                    <span id="telemetry-device-url" class="t-value mono truncate">NENHUM STREAM</span>
+                  </div>
+                </div>
+
+                <div class="volume-spatial-section">
+                  <div class="vol-label-row">
+                    <span>ATENUAÇÃO DE VOLUME ESPACIAL (3D)</span>
+                    <span id="telemetry-volume-text">0%</span>
+                  </div>
+                  <div class="spatial-progress-bar">
+                    <div id="telemetry-volume-bar" class="spatial-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Painel da Direita: Janela Flutuante PiP para Televisores -->
+              <div class="broadcasting-card">
+                <div class="card-header-slim">
+                  <span class="card-header-tag">VÍDEO DE TELEVISÃO // PICTURE-IN-PICTURE (PiP)</span>
+                </div>
+
+                <p class="pip-feature-desc">
+                  Televisores no Project Zomboid transmitem imagem real através de uma janela flutuante Always-On-Top 
+                  com moldura CRT militar personalizável sobre o seu jogo.
+                </p>
+
+                <div class="pip-toggle-row">
+                  <div class="switch-meta">
+                    <span class="switch-title">Auto-PiP de Televisão</span>
+                    <span class="switch-sub">Abre a tela de vídeo automaticamente quando ligar uma TV e fecha ao desligar.</span>
+                  </div>
+                  <label class="tactical-toggle-switch">
+                    <input type="checkbox" id="broadcasting-autopip-toggle" checked />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="pip-actions-row">
+                  <button id="btn-test-pip-window" class="tactical-btn secondary">
+                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor; margin-right: 6px;"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                    TESTAR JANELA FLUTUANTE DE TV (PiP)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rodapé Informativo Tático -->
+            <div class="broadcasting-notice-footer">
+              <span class="notice-icon">🛡️</span>
+              <div class="notice-text">
+                <strong>ZERO IMPACTO NO FLUXO DE JOGO:</strong> O reprodutor dentro do PZHub permanece 100% invisível em segundo plano. 
+                Você não precisa pausar, pular ou gerenciar o player por aqui: use os botões vanillas e o menu do próprio rádio ou televisão no Project Zomboid.
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <!-- =================================================== -->
@@ -834,6 +973,40 @@
           <div class="modal-card-footer">
             <button id="modal-close-btn" class="tarkov-btn btn-cyan" style="width: 100%;">
               ENTENDI
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================== -->
+      <!-- MODAL: CONFIRMAÇÃO DO MOTOR DE TRANSMISSÃO          -->
+      <!-- =================================================== -->
+      <div id="broadcasting-confirm-modal" class="tactical-modal-overlay">
+        <div class="tarkov-modal-card" style="max-width: 480px;">
+          <div class="modal-card-header">
+            <div class="modal-title-wrap">
+              <span class="modal-tag">PZHUB // MOTOR DE TRANSMISSÃO</span>
+              <h3 class="modal-title">SINCRONIZAÇÃO ATIVADA</h3>
+            </div>
+            <button id="btn-close-broadcasting-modal" class="modal-close-icon" style="background: rgba(0,0,0,0.6); border: 1px solid var(--panel-border); color: #fff; width: 28px; height: 28px; border-radius: 4px; cursor: pointer;">✕</button>
+          </div>
+          <div class="modal-card-body" style="padding: 20px 24px;">
+            <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px;">
+              <div style="font-size: 34px; line-height: 1;">📻</div>
+              <div style="font-size: 13px; line-height: 1.5; color: var(--text-main);">
+                <p style="margin-bottom: 8px;"><strong>O motor externo de reprodução multimídia está em execução.</strong></p>
+                <p style="color: var(--text-muted); margin-bottom: 10px;">
+                  Quando você ligar qualquer rádio ou televisão no Project Zomboid, o som e o vídeo serão reproduzidos em segundo plano sem necessidade de você controlar nada no PZHub.
+                </p>
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border: 1px solid rgba(0, 210, 211, 0.2); font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan); line-height: 1.6;">
+                  ✓ Player invisível em segundo plano<br/>
+                  ✓ Janela PiP flutuante para televisores<br/>
+                  ✓ Controle 100% de dentro do jogo (in-game)
+                </div>
+              </div>
+            </div>
+            <button onclick="document.getElementById('broadcasting-confirm-modal').classList.remove('active')" class="tarkov-btn btn-emerald" style="width: 100%; justify-content: center; padding: 10px;">
+              ENTENDIDO, VOLTAR AO JOGO
             </button>
           </div>
         </div>

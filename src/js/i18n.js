@@ -60,6 +60,7 @@ export const translations = {
     "tab_modpacks": "02 MODPACKS",
     "tab_local_mods": "03 MODS LOCAIS",
     "tab_map": "04 MAPA & RADAR",
+    "tab_broadcasting": "05 TRANSMISSÃO",
 
     // View 1: Hub
     "hub_badge": "CENTRO DE COMANDO TÁTICO",
@@ -139,6 +140,7 @@ export const translations = {
     "tab_modpacks": "02 MODPACKS",
     "tab_local_mods": "03 LOCAL MODS",
     "tab_map": "04 MAP & RADAR",
+    "tab_broadcasting": "05 BROADCASTING",
 
     // View 1: Hub
     "hub_badge": "TACTICAL COMMAND CENTER",
@@ -218,6 +220,7 @@ export const translations = {
     "tab_modpacks": "02 MODPACKS",
     "tab_local_mods": "03 MODS LOCALES",
     "tab_map": "04 MAPA Y RADAR",
+    "tab_broadcasting": "05 TRANSMISIÓN",
 
     // View 1: Hub
     "hub_badge": "CENTRO DE COMANDO TÁCTICO",

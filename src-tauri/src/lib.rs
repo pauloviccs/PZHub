@@ -18,7 +18,7 @@ use mod_manager::{
 };
 use updater::{download_and_run_installer, fetch_update_manifest};
 use launcher::launch_game;
-use broadcasting::{is_broadcasting_mod_installed, read_broadcasting_json, set_pip_visible};
+use broadcasting::{is_broadcasting_mod_installed, read_broadcasting_json, set_pip_visible, drag_pip, set_pip_always_on_top_state};
 
 #[tauri::command]
 async fn get_tile(layer: String, z: u32, x: u32, y: u32) -> Result<String, String> {
@@ -217,6 +217,16 @@ fn set_pip_window_visible(app: tauri::AppHandle, visible: bool) -> Result<(), St
 }
 
 #[tauri::command]
+fn drag_pip_window(app: tauri::AppHandle) -> Result<(), String> {
+    drag_pip(&app)
+}
+
+#[tauri::command]
+fn set_pip_always_on_top(app: tauri::AppHandle, always_on_top: bool) -> Result<(), String> {
+    set_pip_always_on_top_state(&app, always_on_top)
+}
+
+#[tauri::command]
 fn get_app_version(app: tauri::AppHandle) -> String {
     app.package_info().version.to_string()
 }
@@ -255,7 +265,9 @@ pub fn run() {
             launch_project_zomboid,
             check_broadcasting_installed,
             get_broadcasting_data,
-            set_pip_window_visible
+            set_pip_window_visible,
+            drag_pip_window,
+            set_pip_always_on_top
         ])
         .run(tauri::generate_context!())
         .expect("error while running PZHub tauri application");

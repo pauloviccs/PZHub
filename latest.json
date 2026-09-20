@@ -1,8 +1,8 @@
 {
-  "version": "2.2.3",
-  "name": "PZHub Tactical Patch v2.2.3",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.3/PZHub_2.2.3_x64-setup.exe",
-  "notes": "### PZHub Update 2.2.3, I'ts Music Time!\n\n- **Novo Motor de Transmissão Multimídia (Aba 05):** Conexão em segundo plano com o mod VICCS Broadcasting do Project Zomboid.\n- **Janela Flutuante PiP para Televisores:** Exibição de vídeo Always-on-Top sincronizado com TVs in-game com filtro CRT retrô.\n- **Player Oculto & Leve:** Reprodução de áudio espacial 3D em segundo plano sem necessidade de controle manual.\n- **Sincronização Multiplayer:** Sincronização temporal de reprodução baseada em timestamps mundiais.",
-  "pub_date": "2026-09-20T14:00:00Z",
+  "version": "2.2.5",
+  "name": "PZHub Tactical Patch v2.2.5",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.5/PZHub_2.2.5_x64-setup.exe",
+  "notes": "### PZHub Update 2.2.5 — Som Automotivo Sincronizado & Correção de Reprodução Fantasma\n\n- **Som Automotivo para Qualquer Carro:** Total sincronização espacial para todos os jogadores dentro ou ao redor do veículo, com acompanhamento de movimento em tempo real e som direto de cabine para passageiros.\n- **Heartbeat TTL & Anti-Reprodução Fantasma:** Interrupção automática da música quando o jogo é fechado ou o jogador desconecta do servidor, além de proteção contra reprodução acidental ao abrir o PZHub com o jogo fechado.\n- **Anti-Overlap de Canais Vanilla:** Silenciamento automático das transmissões vanilla em rádios e televisores durante a reprodução do mod, com restauração automática ao finalizar.",
+  "pub_date": "2026-09-20T19:30:00Z",
   "mandatory": false
 }

@@ -93,9 +93,22 @@ pub fn is_broadcasting_mod_installed() -> bool {
     false
 }
 
-/// Lê o conteúdo bruto de game_to_app.json
+/// Lê o conteúdo bruto de game_to_app.json validando a frescura do arquivo (Heartbeat TTL de 3.0s)
 pub fn read_broadcasting_json() -> Option<String> {
     let path = find_broadcasting_file()?;
+
+    // Verifica se o arquivo foi modificado recentemente.
+    // Se tiver mais de 3 segundos sem atualização, o jogo foi fechado ou o jogador desconectou.
+    if let Ok(metadata) = fs::metadata(&path) {
+        if let Ok(modified) = metadata.modified() {
+            if let Ok(elapsed) = modified.elapsed() {
+                if elapsed > std::time::Duration::from_millis(3000) {
+                    return None;
+                }
+            }
+        }
+    }
+
     fs::read_to_string(&path).ok()
 }
 
@@ -108,6 +121,22 @@ pub fn set_pip_visible(app: &tauri::AppHandle, visible: bool) -> Result<(), Stri
         } else {
             window.hide().map_err(|e| e.to_string())?;
         }
+    }
+    Ok(())
+}
+
+/// Inicia o arrasto nativo da janela flutuante de TV
+pub fn drag_pip(app: &tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("pip_player") {
+        window.start_dragging().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Controla o modo "Always On Top" da janela PiP para fixar por cima do jogo
+pub fn set_pip_always_on_top_state(app: &tauri::AppHandle, always_on_top: bool) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("pip_player") {
+        window.set_always_on_top(always_on_top).map_err(|e| e.to_string())?;
     }
     Ok(())
 }

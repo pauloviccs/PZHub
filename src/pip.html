@@ -50,6 +50,7 @@
         border-bottom: 1px solid var(--border-tactical);
         cursor: grab;
         z-index: 100;
+        -webkit-app-region: drag;
       }
 
       .pip-header:active {
@@ -60,6 +61,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        cursor: grab;
       }
 
       .pip-status-led {
@@ -89,6 +91,7 @@
         display: flex;
         align-items: center;
         gap: 4px;
+        -webkit-app-region: no-drag;
       }
 
       .pip-btn {
@@ -103,6 +106,31 @@
         justify-content: center;
         cursor: pointer;
         transition: color 0.15s, background 0.15s;
+        -webkit-app-region: no-drag;
+      }
+
+      .pip-btn.pin {
+        color: var(--text-muted);
+      }
+
+      .pip-btn.pin.active {
+        color: var(--accent-cyan);
+        background: rgba(0, 210, 211, 0.15);
+        box-shadow: 0 0 8px rgba(0, 210, 211, 0.4);
+      }
+
+      .pip-btn.drag {
+        cursor: grab;
+        color: var(--accent-cyan);
+      }
+
+      .pip-btn.drag:hover {
+        background: rgba(0, 210, 211, 0.2);
+        color: #fff;
+      }
+
+      .pip-btn.drag:active {
+        cursor: grabbing;
       }
 
       .pip-btn:hover {
@@ -221,6 +249,12 @@
         <span class="pip-title-text" data-tauri-drag-region>VICCS CRT-TV // LIVE</span>
       </div>
       <div class="pip-controls">
+        <button id="btn-pip-pin" class="pip-btn pin active" title="Fixar por cima do jogo (Always On Top)">
+          <svg viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+        </button>
+        <button id="btn-pip-drag" class="pip-btn drag" title="Arrastar Janela da TV (Clique e segure para mover)" data-tauri-drag-region>
+          <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+        </button>
         <button id="btn-pip-close" class="pip-btn close" title="Ocultar Tela Flutuante">
           <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -256,8 +290,9 @@
       const osd = document.getElementById('pip-osd');
       const videoFrame = document.getElementById('yt-video-frame');
       const btnClose = document.getElementById('btn-pip-close');
+      const btnPin = document.getElementById('btn-pip-pin');
 
-      let currentVideoId = null;
+      let currentMediaKey = null;
       let osdTimeout = null;
 
       function showOSD(text) {
@@ -268,11 +303,40 @@
         osdTimeout = setTimeout(() => osd.classList.remove('show'), 3000);
       }
 
-      function extractYouTubeId(url) {
-        if (!url) return null;
-        const regExp = /(?:v=|\/embed\/|youtu\.be\/|v\/|watch\?v=|\&v=)([^#\&\?]+)/;
-        const match = url.match(regExp);
-        return (match && match[1] && match[1].length === 11) ? match[1] : null;
+      function parseYouTubeMedia(url) {
+        if (!url) return { videoId: null, playlistId: null };
+        let playlistId = null;
+        const listMatch = url.match(/[?&]list=([^#&?]+)/);
+        if (listMatch && listMatch[1]) playlistId = listMatch[1];
+        let videoId = null;
+        const vMatch = url.match(/(?:v=|\/embed\/|youtu\.be\/|v\/|watch\?v=|&v=)([^#&?]+)/);
+        if (vMatch && vMatch[1] && vMatch[1].length === 11) videoId = vMatch[1];
+        return { videoId, playlistId };
+      }
+
+      // Controle do Modo "Always On Top" (Fixar sobre o jogo)
+      let isAlwaysOnTop = localStorage.getItem('viccs_pip_always_on_top') !== 'false'; // default true
+      if (btnPin) {
+        btnPin.classList.toggle('active', isAlwaysOnTop);
+        btnPin.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          isAlwaysOnTop = !isAlwaysOnTop;
+          localStorage.setItem('viccs_pip_always_on_top', isAlwaysOnTop);
+          btnPin.classList.toggle('active', isAlwaysOnTop);
+          if (isTauri && window.__TAURI__?.core?.invoke) {
+            try {
+              await window.__TAURI__.core.invoke('set_pip_always_on_top', { alwaysOnTop: isAlwaysOnTop });
+            } catch (err) {
+              console.warn('Erro ao alternar always on top:', err);
+            }
+          }
+          showOSD(isAlwaysOnTop ? 'FIXADO SOBRE O JOGO' : 'FIXAÇÃO DESATIVADA');
+        });
+      }
+
+      // Garante que o estado de Always On Top seja aplicado na inicialização
+      if (isTauri && window.__TAURI__?.core?.invoke) {
+        window.__TAURI__.core.invoke('set_pip_always_on_top', { alwaysOnTop: isAlwaysOnTop }).catch(() => {});
       }
 
       // Comunicação via BroadcastChannel com o Motor Principal do PZHub
@@ -283,19 +347,48 @@
         if (!msg) return;
 
         if (msg.type === 'SYNC_TV_STREAM') {
-          const videoId = extractYouTubeId(msg.url);
-          if (videoId) {
-            if (currentVideoId !== videoId) {
-              currentVideoId = videoId;
+          const media = parseYouTubeMedia(msg.url);
+          const videoId = msg.videoId || media.videoId;
+          const playlistId = msg.playlistId || media.playlistId;
+
+          if (videoId || playlistId) {
+            const targetKey = playlistId ? `playlist_${playlistId}_${videoId || ''}` : `video_${videoId}`;
+            if (currentMediaKey !== targetKey) {
+              currentMediaKey = targetKey;
               const startTime = Math.max(0, Math.floor(msg.offsetSeconds || 0));
-              videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&mute=${msg.isMuted ? 1 : 0}&start=${startTime}&enablejsapi=1&rel=0&modestbranding=1`;
+
+              let embedSrc = '';
+              if (videoId && playlistId) {
+                embedSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&mute=${msg.isMuted ? 1 : 0}&start=${startTime}&list=${playlistId}&enablejsapi=1&rel=0&modestbranding=1`;
+              } else if (playlistId) {
+                embedSrc = `https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1&controls=0&mute=${msg.isMuted ? 1 : 0}&enablejsapi=1&rel=0&modestbranding=1`;
+              } else {
+                embedSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&mute=${msg.isMuted ? 1 : 0}&start=${startTime}&enablejsapi=1&rel=0&modestbranding=1`;
+              }
+
+              videoFrame.src = embedSrc;
               standbyOverlay.classList.add('hidden');
               led.classList.add('live');
-              showOSD('CANAL 03 // TRANSMISSÃO SINCRONIZADA');
+              showOSD(playlistId ? 'CANAL 03 // PLAYLIST SINCRONIZADA' : 'CANAL 03 // TRANSMISSÃO SINCRONIZADA');
+            } else {
+              // Garante que o player despause caso estivesse pausado
+              if (videoFrame && videoFrame.contentWindow) {
+                videoFrame.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+              }
             }
           }
+        } else if (msg.type === 'PAUSE_TV_STREAM') {
+          if (videoFrame && videoFrame.contentWindow) {
+            videoFrame.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+          }
+          showOSD('CANAL 03 // PAUSADO');
+        } else if (msg.type === 'RESUME_TV_STREAM') {
+          if (videoFrame && videoFrame.contentWindow) {
+            videoFrame.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+          }
+          showOSD('CANAL 03 // TRANSMISSÃO RETOMADA');
         } else if (msg.type === 'STOP_TV_STREAM') {
-          currentVideoId = null;
+          currentMediaKey = null;
           videoFrame.src = 'about:blank';
           standbyOverlay.classList.remove('hidden');
           led.classList.remove('live');
@@ -315,6 +408,34 @@
           window.close();
         }
       });
+
+      // Controle de arrasto nativo da janela flutuante
+      const triggerDrag = async (e) => {
+        if (e.button !== 0) return; // apenas clique com botão esquerdo
+        if (e.target.closest('#btn-pip-close') || e.target.closest('#btn-pip-pin')) return;
+
+        if (isTauri && window.__TAURI__?.core?.invoke) {
+          try {
+            await window.__TAURI__.core.invoke('drag_pip_window');
+            return;
+          } catch (_) {}
+        }
+        if (isTauri && window.__TAURI__?.window?.getCurrentWindow) {
+          try {
+            await window.__TAURI__.window.getCurrentWindow().startDragging();
+          } catch (_) {}
+        }
+      };
+
+      const btnDrag = document.getElementById('btn-pip-drag');
+      if (btnDrag) {
+        btnDrag.addEventListener('mousedown', triggerDrag);
+      }
+
+      const pipHeader = document.querySelector('.pip-header');
+      if (pipHeader) {
+        pipHeader.addEventListener('mousedown', triggerDrag);
+      }
     </script>
   </body>
 </html>

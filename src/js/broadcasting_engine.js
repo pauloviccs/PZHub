@@ -4,6 +4,8 @@
  * Mantém reprodução em segundo plano com suporte a janela flutuante PiP para televisões.
  */
 
+import { SpatialAudioEngine } from './spatial_audio_engine.js';
+
 export class BroadcastingEngine {
   constructor() {
     this.isTauri = typeof window.__TAURI__ !== 'undefined';
@@ -16,9 +18,14 @@ export class BroadcastingEngine {
     this.lastDataTime = 0;
     this.currentPlayingDevice = null;
     this.currentVideoId = null;
+    this.currentPlaylistId = null;
+    this.currentMediaKey = null;
 
     // Canal de comunicação inter-janelas para a janela PiP
     this.broadcastBus = new BroadcastChannel('viccs_broadcasting_bus');
+
+    // Motor de Áudio Espacial 3D e Acústica
+    this.spatialEngine = new SpatialAudioEngine();
 
     // YouTube Player em Segundo Plano
     this.ytPlayer = null;
@@ -228,6 +235,12 @@ export class BroadcastingEngine {
 
     this.currentPlayingDevice = null;
     this.currentVideoId = null;
+    this.currentPlaylistId = null;
+    this.currentMediaKey = null;
+
+    if (this.spatialEngine) {
+      this.spatialEngine.clearAll();
+    }
 
     // Notifica PiP para parar
     this.broadcastBus.postMessage({ type: 'STOP_TV_STREAM' });
@@ -252,10 +265,48 @@ export class BroadcastingEngine {
       }
     }
 
-    if (!rawJson) return;
+    if (!rawJson) {
+      // Se não há dados do jogo: verifica se estava reproduzindo para cortar o som
+      if (this.currentPlayingDevice) {
+        if (!this.disconnectGraceTimer) {
+          this.disconnectGraceTimer = Date.now();
+        }
+        // Se após 2.0s sem sinal do jogo continuar nulo, desliga tudo imediatamente!
+        if (Date.now() - this.disconnectGraceTimer > 2000) {
+          console.log('[VICCS] Sinal do jogo perdido (jogo fechado ou desconectado). Parando reprodução.');
+          this.stopCurrentMedia();
+          this.clearTelemetryUI();
+          const bridgeState = document.getElementById('telemetry-bridge-status');
+          if (bridgeState) {
+            bridgeState.textContent = 'JOGO DESCONECTADO // STANDBY';
+            bridgeState.style.color = 'var(--text-muted)';
+          }
+          this.disconnectGraceTimer = null;
+        }
+      }
+      return;
+    }
+
+    this.disconnectGraceTimer = null;
 
     try {
       const data = JSON.parse(rawJson);
+
+      // Validação de frescura de dados in-game (Heartbeat TTL de 3.5 segundos)
+      const nowSec = Date.now() / 1000;
+      if (data.timestamp && (nowSec - data.timestamp > 3.5)) {
+        if (this.currentPlayingDevice) {
+          this.stopCurrentMedia();
+          this.clearTelemetryUI();
+          const bridgeState = document.getElementById('telemetry-bridge-status');
+          if (bridgeState) {
+            bridgeState.textContent = 'JOGO DESCONECTADO // STANDBY';
+            bridgeState.style.color = 'var(--text-muted)';
+          }
+        }
+        return;
+      }
+
       this.processGameData(data);
     } catch (e) {
       console.warn('[VICCS] JSON corrompido:', e);
@@ -268,7 +319,39 @@ export class BroadcastingEngine {
     this.lastDataTime = Date.now();
     this.lastSeq = data.seq || 0;
 
-    const activeDevices = data.devices;
+    const isGamePaused = data.isPaused === true;
+    const activeDevices = data.devices || [];
+    const listenerData = data.listener || { x: 0, y: 0, z: 0, roomClass: 'outdoor', outdoor: true };
+
+    // Atualiza o motor acústico com todos os emissores ativos
+    if (this.spatialEngine) {
+      const currentIds = new Set();
+      for (const dev of activeDevices) {
+        if (dev && dev.deviceId) {
+          currentIds.add(dev.deviceId);
+          this.spatialEngine.updateAcoustics(dev, listenerData);
+        }
+      }
+      for (const [id] of this.spatialEngine.emitters) {
+        if (!currentIds.has(id)) {
+          this.spatialEngine.removeEmitter(id);
+        }
+      }
+    }
+
+    if (isGamePaused) {
+      // Jogo pausado no Single Player: pausa o áudio e a janela PiP
+      if (this.ytPlayer && this.isYtReady) {
+        try { this.ytPlayer.pauseVideo(); } catch (e) {}
+      }
+      this.broadcastBus.postMessage({ type: 'PAUSE_TV_STREAM' });
+
+      if (activeDevices && activeDevices.length > 0) {
+        activeDevices.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+        this.updatePausedTelemetryUI(activeDevices[0]);
+      }
+      return;
+    }
 
     if (activeDevices.length === 0) {
       // Nenhum dispositivo ligado
@@ -283,23 +366,84 @@ export class BroadcastingEngine {
     activeDevices.sort((a, b) => (b.volume || 0) - (a.volume || 0));
     const primeDev = activeDevices[0];
 
+    // Se o dispositivo individual estiver pausado
+    if (primeDev.isPaused === true) {
+      if (this.ytPlayer && this.isYtReady) {
+        try { this.ytPlayer.pauseVideo(); } catch (e) {}
+      }
+      this.broadcastBus.postMessage({ type: 'PAUSE_TV_STREAM' });
+      this.updatePausedTelemetryUI(primeDev);
+      return;
+    }
+
     this.handlePlayback(primeDev);
     this.updateTelemetryUI(primeDev, activeDevices.length);
   }
 
+  parseYouTubeMedia(url) {
+    if (!url) return { videoId: null, playlistId: null };
+
+    let playlistId = null;
+    const listMatch = url.match(/[?&]list=([^#&?]+)/);
+    if (listMatch && listMatch[1]) {
+      playlistId = listMatch[1];
+    }
+
+    let videoId = null;
+    const vMatch = url.match(/(?:v=|\/embed\/|youtu\.be\/|v\/|watch\?v=|&v=)([^#&?]+)/);
+    if (vMatch && vMatch[1] && vMatch[1].length === 11) {
+      videoId = vMatch[1];
+    }
+
+    return { videoId, playlistId };
+  }
+
   extractYouTubeId(url) {
-    if (!url) return null;
-    const regExp = /(?:v=|\/embed\/|youtu\.be\/|v\/|watch\?v=|\&v=)([^#\&\?]+)/;
-    const match = url.match(regExp);
-    return (match && match[1] && match[1].length === 11) ? match[1] : null;
+    return this.parseYouTubeMedia(url).videoId;
+  }
+
+  setSmoothVolume(targetVolume) {
+    if (!this.ytPlayer || !this.isYtReady) return;
+    if (this.volumeTransitionTimer) {
+      clearInterval(this.volumeTransitionTimer);
+      this.volumeTransitionTimer = null;
+    }
+
+    const startVol = (this.currentVolume !== undefined) ? this.currentVolume : targetVolume;
+    const diff = targetVolume - startVol;
+    
+    if (Math.abs(diff) <= 2) {
+      this.currentVolume = targetVolume;
+      try { this.ytPlayer.setVolume(targetVolume); } catch (_) {}
+      return;
+    }
+
+    const steps = 8;
+    let currentStep = 0;
+    this.volumeTransitionTimer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const eased = (1 - Math.cos(progress * Math.PI)) / 2;
+      const vol = Math.round(startVol + diff * eased);
+      this.currentVolume = vol;
+      try { this.ytPlayer.setVolume(vol); } catch (_) {}
+
+      if (currentStep >= steps) {
+        clearInterval(this.volumeTransitionTimer);
+        this.volumeTransitionTimer = null;
+        this.currentVolume = targetVolume;
+        try { this.ytPlayer.setVolume(targetVolume); } catch (_) {}
+      }
+    }, 20);
   }
 
   handlePlayback(device) {
     if (!device || !device.url) return;
 
-    const videoId = this.extractYouTubeId(device.url);
-    if (!videoId) return;
+    const { videoId, playlistId } = this.parseYouTubeMedia(device.url);
+    if (!videoId && !playlistId) return;
 
+    const mediaKey = playlistId ? `playlist_${playlistId}_${videoId || ''}` : `video_${videoId}`;
     const currentTimestamp = Date.now() / 1000;
     const startedAt = device.startedAt || currentTimestamp;
     const offsetSeconds = Math.max(0, currentTimestamp - startedAt);
@@ -308,21 +452,43 @@ export class BroadcastingEngine {
     // 1. Áudio em Segundo Plano
     if (this.ytPlayer && this.isYtReady) {
       try {
-        if (this.currentVideoId !== videoId) {
+        if (this.currentMediaKey !== mediaKey) {
+          this.currentMediaKey = mediaKey;
           this.currentVideoId = videoId;
-          this.ytPlayer.loadVideoById({
-            videoId: videoId,
-            startSeconds: Math.floor(offsetSeconds)
-          });
-          this.ytPlayer.setVolume(targetVolume);
-        } else {
-          // Ajusta volume espacial dinâmico
-          this.ytPlayer.setVolume(targetVolume);
+          this.currentPlaylistId = playlistId;
 
-          // Verifica dessincronização maior que 3.5 segundos
-          const playerTime = this.ytPlayer.getCurrentTime ? this.ytPlayer.getCurrentTime() : 0;
-          if (Math.abs(playerTime - offsetSeconds) > 3.5) {
-            this.ytPlayer.seekTo(offsetSeconds, true);
+          if (playlistId) {
+            this.ytPlayer.loadPlaylist({
+              list: playlistId,
+              listType: 'playlist',
+              index: 0,
+              startSeconds: Math.floor(offsetSeconds)
+            });
+          } else {
+            this.ytPlayer.loadVideoById({
+              videoId: videoId,
+              startSeconds: Math.floor(offsetSeconds)
+            });
+          }
+          this.setSmoothVolume(targetVolume);
+        } else {
+          // Se estava pausado (pelo jogo ou botão de pausa), retoma reprodução
+          try {
+            const playerState = this.ytPlayer.getPlayerState ? this.ytPlayer.getPlayerState() : -1;
+            if (playerState === 2) { // 2 = PAUSED
+              this.ytPlayer.playVideo();
+            }
+          } catch (_) {}
+
+          // Ajusta volume espacial dinâmico com interpolação suave anti-estalo
+          this.setSmoothVolume(targetVolume);
+
+          // Verifica dessincronização maior que 3.5 segundos para vídeos individuais
+          if (!playlistId) {
+            const playerTime = this.ytPlayer.getCurrentTime ? this.ytPlayer.getCurrentTime() : 0;
+            if (Math.abs(playerTime - offsetSeconds) > 3.5) {
+              this.ytPlayer.seekTo(offsetSeconds, true);
+            }
           }
         }
       } catch (err) {
@@ -335,6 +501,8 @@ export class BroadcastingEngine {
       this.broadcastBus.postMessage({
         type: 'SYNC_TV_STREAM',
         url: device.url,
+        videoId: videoId,
+        playlistId: playlistId,
         offsetSeconds: offsetSeconds,
         volume: targetVolume,
         isMuted: true // O áudio é tocado centralizadamente pelo PZHub
@@ -360,6 +528,8 @@ export class BroadcastingEngine {
     }
     this.currentPlayingDevice = null;
     this.currentVideoId = null;
+    this.currentPlaylistId = null;
+    this.currentMediaKey = null;
 
     this.broadcastBus.postMessage({ type: 'STOP_TV_STREAM' });
     if (this.isTauri && window.__TAURI__?.core?.invoke) {
@@ -394,13 +564,31 @@ export class BroadcastingEngine {
     }
 
     if (deviceTypeEl) {
-      deviceTypeEl.textContent = device.deviceType === 'TELEVISION' 
-        ? '📺 TELEVISÃO CRT (ÁUDIO + VÍDEO PiP)' 
-        : '📻 RÁDIO PORTÁTIL / SOM (ÁUDIO 3D)';
+      if (device.deviceType === 'TELEVISION') {
+        deviceTypeEl.textContent = '📺 TELEVISÃO CRT (ÁUDIO + VÍDEO PiP)';
+      } else if (device.deviceType === 'VEHICLE') {
+        deviceTypeEl.textContent = '🚗 SOM AUTOMOTIVO (ÁUDIO 3D / CABINE)';
+      } else if (device.deviceType === 'CDPLAYER') {
+        deviceTypeEl.textContent = '🎧 CD PLAYER / DISCMAN (ÁUDIO PRIVADO)';
+      } else {
+        deviceTypeEl.textContent = '📻 RÁDIO PORTÁTIL / ESTAÇÃO (ÁUDIO 3D)';
+      }
     }
 
     if (devCoordsEl) {
-      devCoordsEl.textContent = `X: ${device.deviceId || 'MUNDO'} | DISTÂNCIA: ${device.distance ? device.distance.toFixed(1) + 'm' : '1.0m'}`;
+      const distStr = device.distance !== undefined ? device.distance.toFixed(1) + 'm' : '1.0m';
+      let occlStr = '🔊 DIRETO (LIVRE)';
+      if (device.occl?.exteriorWall) {
+        occlStr = '🔇 ABAFADO (FACHADA EXTERNA)';
+      } else if (device.occl?.interiorWall) {
+        occlStr = '🔇 ABAFADO (PAREDE INTERNA)';
+      } else if (device.occl?.doors > 0) {
+        occlStr = '🚪 ABAFADO (PORTA FECHADA)';
+      } else if (device.occluded) {
+        occlStr = '🔇 ABAFADO (OBSTÁCULO)';
+      }
+      const roomStr = (device.roomClass || 'outdoor').toUpperCase();
+      devCoordsEl.textContent = `DISTÂNCIA: ${distStr} | SALA: ${roomStr} | ACÚSTICA: ${occlStr}`;
     }
 
     if (devUrlEl) {
@@ -430,5 +618,13 @@ export class BroadcastingEngine {
     if (devUrlEl) devUrlEl.textContent = 'NENHUM STREAM';
     if (volBarEl) volBarEl.style.width = '0%';
     if (volTextEl) volTextEl.textContent = '0%';
+  }
+
+  updatePausedTelemetryUI(device) {
+    const bridgeState = document.getElementById('telemetry-bridge-status');
+    if (bridgeState) {
+      bridgeState.textContent = 'JOGO PAUSADO // REPRODUÇÃO EM ESPERA';
+      bridgeState.style.color = 'var(--accent-amber)';
+    }
   }
 }

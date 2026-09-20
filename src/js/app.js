@@ -11,7 +11,7 @@ import { KNOX_TOWNS } from './pz_projection.js';
 import { initLocalModsScanner, refreshLocalMods, getLocalModsList } from './local_mods_scanner.js';
 import { initModpackManager, setCategoryFilter, getAvailableModpacks, executeModpackInstallation } from './modpack_manager.js';
 import { i18n, PZ_CATEGORIES } from './i18n.js';
-import { checkForAppUpdates, getLastUpdateCheck, updateTopbarIndicator } from './updater.js';
+import { checkForAppUpdates, getLastUpdateCheck, updateTopbarIndicator, syncAppVersion } from './updater.js';
 import { initLauncher } from './launcher.js';
 import { initAuth } from './auth.js';
 import { initSocialManager } from './social_manager.js';
@@ -132,6 +132,9 @@ class App {
   }
 
   setupAppUpdater() {
+    // Sincroniza a versão nativa do PZHub imediatamente com o Rust
+    syncAppVersion();
+
     // Restaura indicador da última checagem se houver registro prévio em localStorage
     const lastCheck = getLastUpdateCheck();
     if (lastCheck && lastCheck.success === false && lastCheck.error) {

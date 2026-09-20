@@ -5,10 +5,40 @@
 
 import { parseMarkdown } from './markdown_parser.js';
 
-export const CURRENT_APP_VERSION = '2.2.2';
+export let CURRENT_APP_VERSION = '2.2.3';
 
 // Endpoint padrão do manifesto oficial no GitHub Raw
 export const DEFAULT_UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/pauloviccs/PZHub/master/latest.json';
+
+/**
+ * Sincroniza dinamicamente a versão da aplicação via IPC nativo do Tauri (lib.rs)
+ */
+export async function syncAppVersion() {
+  try {
+    if (typeof window !== 'undefined' && window.__TAURI__?.core?.invoke) {
+      const nativeVer = await window.__TAURI__.core.invoke('get_app_version');
+      if (nativeVer && typeof nativeVer === 'string') {
+        CURRENT_APP_VERSION = nativeVer.replace(/^v/i, '').trim();
+      }
+    }
+  } catch (err) {
+    console.warn('[Updater] Falha ao sincronizar versão nativa do PZHub:', err);
+  }
+
+  // Atualiza os elementos de versão no DOM imediatamente se existirem
+  if (typeof document !== 'undefined') {
+    const hubVerEl = document.getElementById('hub-version-val');
+    if (hubVerEl) {
+      hubVerEl.textContent = `v${CURRENT_APP_VERSION}`;
+    }
+    const localVerEl = document.getElementById('version-info-local');
+    if (localVerEl) {
+      localVerEl.textContent = `v${CURRENT_APP_VERSION}`;
+    }
+  }
+
+  return CURRENT_APP_VERSION;
+}
 
 // Estado em memória da última verificação executada
 let lastUpdateCheckState = null;
@@ -17,6 +47,11 @@ try {
   const cached = localStorage.getItem('pzhub_last_update_check');
   if (cached) {
     lastUpdateCheckState = JSON.parse(cached);
+    // Sanitização: Se o usuário já está numa versão igual ou mais nova que o manifesto em cache,
+    // anula a flag hasUpdate para impedir falsos-positivos visuais no boot
+    if (lastUpdateCheckState?.manifest?.version && !isNewerVersion(lastUpdateCheckState.manifest.version, CURRENT_APP_VERSION)) {
+      lastUpdateCheckState.hasUpdate = false;
+    }
     if (typeof window !== 'undefined') {
       window.__PZHUB_LAST_UPDATE_CHECK__ = lastUpdateCheckState;
     }
@@ -238,6 +273,13 @@ export function showTacticalVersionModal({ status = 'uptodate', manifest = null,
   const modal = document.getElementById('tactical-version-modal');
   if (!modal) return;
 
+  // Se não estiver em estado de checagem ou erro, e houver de fato uma versão mais nova no manifesto,
+  // redireciona imediatamente para o modal de instalação para impedir falso status "100% Atualizado"
+  if (!isChecking && status !== 'error' && manifest?.version && isNewerVersion(manifest.version, CURRENT_APP_VERSION)) {
+    showUpdateModal(manifest);
+    return;
+  }
+
   const dot = document.getElementById('version-modal-dot');
   const kicker = document.getElementById('version-modal-kicker');
   const heroIcon = document.getElementById('version-hero-icon');
@@ -349,6 +391,9 @@ export function showTacticalVersionModal({ status = 'uptodate', manifest = null,
  * Consulta o manifesto remoto e aciona o modal tático se houver nova versão
  */
 export async function checkForAppUpdates(customUrl = null, isManualCheck = false) {
+  // 0. Sincroniza dinamicamente a versão com o runtime nativo do Rust
+  await syncAppVersion();
+
   let manifestUrl = customUrl || localStorage.getItem('pzhub_custom_update_url') || DEFAULT_UPDATE_MANIFEST_URL;
   manifestUrl = normalizeManifestUrl(manifestUrl);
 
@@ -732,6 +777,9 @@ if (typeof window !== 'undefined') {
  * Inicializa todos os listeners e gatilhos da interface para o sistema de atualizações
  */
 export function initUpdaterListeners() {
+  // Sincroniza a versão no boot dos listeners
+  syncAppVersion();
+
   // 1. Botão "BUSCAR" no card de versão do Hub
   const hubBtn = document.getElementById('btn-hub-check-updates');
   if (hubBtn) {
@@ -744,10 +792,15 @@ export function initUpdaterListeners() {
   // 2. Card de versão do Hub
   const hubBox = document.getElementById('hub-updater-box');
   if (hubBox) {
-    hubBox.onclick = () => {
+    hubBox.onclick = async () => {
+      await syncAppVersion();
       const last = getLastUpdateCheck();
       if (last && last.success === true && last.manifest) {
-        showTacticalVersionModal({ status: 'uptodate', manifest: last.manifest });
+        if (isNewerVersion(last.manifest.version, CURRENT_APP_VERSION)) {
+          showUpdateModal(last.manifest);
+        } else {
+          showTacticalVersionModal({ status: 'uptodate', manifest: last.manifest });
+        }
       } else {
         checkForAppUpdates(null, true);
       }
@@ -765,7 +818,8 @@ export function initUpdaterListeners() {
   // 4. Indicador na Topbar
   const topbarBadge = document.getElementById('topbar-updater-status');
   if (topbarBadge) {
-    topbarBadge.onclick = () => {
+    topbarBadge.onclick = async () => {
+      await syncAppVersion();
       const last = getLastUpdateCheck();
       if (last && last.success === false) {
         showTacticalVersionModal({ status: 'error', error: last.error });

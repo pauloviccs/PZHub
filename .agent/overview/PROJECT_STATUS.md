@@ -4,12 +4,12 @@
 PZHub Desktop (Tactical Live Radar, Modpack Manager & Operations Suite)
 
 ## Description
-Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar, modpacks e motor de reprodução multimídia para a comunidade de **Project Zomboid (Build 42 & Build 41)**. O ecossistema integra:
+Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar, modpacks e motor de reprodução multimídia para a comunidade de **Project Zomboid (Build 42 & Build 41)**. Na **v2.2.6**, o sistema ganhou telemetria de downloads em tempo real com RPCs atômicas PostgreSQL `SECURITY DEFINER` e sincronização via Supabase Realtime WebSocket. O ecossistema integra:
 - Motor de mapa isométrico 1:1 de Knox County com cache de tiles em disco gerenciado pelo Rust;
 - Motor de Blips táticos vetoriais SVG estilo GTA V (FiveM / RAGE:MP) com 20 categorias e sistema de LOD em 3 camadas;
 - Malha de 1.017 POIs enriquecidos (incluindo oficinas mecânicas de Fallas Lake, West Point, Muldraugh e Riverside);
 - Telemetria e radar ao vivo via mini-mod Lua e navegação GPS A* por malha viária oficial de 1.098 ruas;
-- Catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`) e descompactação assíncrona de `.zip`;
+- Catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`), descompactação assíncrona de `.zip` e **contagem atômica de downloads via RPC `increment_modpack_download` com `SECURITY DEFINER`**;
 - Scanner local de mods com alternância Grade ⊞ / Lista ☰;
 - Autenticação integrada com Supabase Auth/PostgreSQL e painel social global estilo Riot Client (gaveta lateral retrátil, lista de amigos com detecção de presença dinâmica, DM pop-up com notificação acústica tática sintetizada e tabela isolada `direct_messages`);
 - Botão hero de lançamento na Steam com injeção de parâmetros JVM de memória RAM no `ProjectZomboid64.json`;
@@ -22,10 +22,10 @@ Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **
   - **Anti-Overlap de Canais Vanilla:** Silenciamento automático das transmissões vanilla em rádios e televisões durante a reprodução do mod.
 
 ## Tech Stack
-- **Languages:** Rust 1.94+ (Edition 2021), JavaScript (ES2023 Modules), Lua 5.1/JIT (PZ Modding API), HTML5, CSS3, SQL (PostgreSQL DDL/RLS)
+- **Languages:** Rust 1.94+ (Edition 2021), JavaScript (ES2023 Modules), Lua 5.1/JIT (PZ Modding API), HTML5, CSS3, SQL (PostgreSQL DDL/RLS/Stored Procedures)
 - **Frameworks:** Tauri v2 (`tauri` 2.x, `tauri-plugin-opener` 2.x), Leaflet.js v1.9.4, Web Audio API
 - **Tools:** Cargo, Node.js / npm, NSIS (Windows Installer Toolset), WiX Toolset (MSI), Tauri CLI v2
-- **Services:** Supabase (PostgreSQL + Auth + Storage + Realtime Presence Channels + REST API), Steam Workshop Protocol (`steam://`), YouTube IFrame API, Vercel (Hospedagem da plataforma web `VICCS_PZHub_Website`), GitHub Raw & Releases (Distribuição oficial de manifestos e instaladores binários)
+- **Services:** Supabase (PostgreSQL + Auth + Storage + Realtime Presence Channels + Realtime Postgres Changes + REST API + RPC), Steam Workshop Protocol (`steam://`), YouTube IFrame API, Vercel (Hospedagem da plataforma web `VICCS_PZHub_Website`), GitHub Raw & Releases (Distribuição oficial de manifestos e instaladores binários)
 
 ## Folder Structure
 - ```text
@@ -48,7 +48,8 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   └── PROJECT_STATUS.md                # Visão geral unificada e status do projeto
 │   └── updates/
 │       ├── PATCH_NOTES.md                   # Caderno geral de notas de atualização
-│       └── PATCH_NOTES_2.2.3.md             # Notas detalhadas do motor multimídia
+│       ├── PATCH_NOTES_2.2.3.md             # Notas detalhadas do motor multimídia
+│       └── PATCH_NOTES_2.2.6.md             # Telemetria de downloads em tempo real & RPCs
 ├── scripts/                                 # Scripts utilitários de manutenção
 │   └── enrich_pois.js                       # Telemetria e enriquecimento de 1.017 POIs do mapa
 ├── server-mod/                              # Mini-mod Lua para Project Zomboid (B41 & B42)
@@ -64,7 +65,7 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   ├── worldmap_forest.json             # Vetores de floresta
 │   │   └── worldmap_water.json              # Vetores de rios e massas d'água
 │   ├── js/
-│   │   ├── app.js                           # Controlador principal, router de abas e subsistemas
+│   │   ├── app.js                           # Controlador principal, router, métricas globais e Realtime
 │   │   ├── auth.js                          # Autenticação e perfis sincronizados com Supabase Auth
 │   │   ├── blip_icons.js                    # Motor vetorial de Blips GTA V (FiveM / RAGE:MP)
 │   │   ├── broadcasting_engine.js           # Motor de áudio em segundo plano e sincronização TV PiP
@@ -75,19 +76,19 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   ├── local_mods_scanner.js            # Scanner com modos Grade ⊞ e Lista ☰
 │   │   ├── map_engine.js                    # Motor isométrico 1:1 Knox County com Z-levels e LOD
 │   │   ├── markdown_parser.js               # Parser Markdown nativo zero-dependency
-│   │   ├── modpack_manager.js               # Gerenciador de Modpacks conectado ao Supabase
+│   │   ├── modpack_manager.js               # Gerenciador de Modpacks com RPC atômica de downloads
 │   │   ├── overlay.js                       # HUD flutuante e atalhos globais
 │   │   ├── pz_projection.js                 # Projeção matemática de coordenadas Zomboid
 │   │   ├── social_manager.js                # Painel social estilo Riot Client 1:1 e Supabase Realtime
 │   │   ├── spatial_audio_engine.js          # Motor Web Audio API de espacialização 3D e DSP acústico
 │   │   ├── squad_tracker.js                 # Telemetria e rastreamento de aliados
 │   │   ├── supabaseClient.js                # Cliente Supabase singleton
-│   │   └── updater.js                       # Auto-updater blindado e toasts táticos
+│   │   └── updater.js                       # Auto-updater blindado v2.2.6 e toasts táticos
 │   ├── lib/
 │   │   ├── leaflet/                         # Leaflet.js local integrado
 │   │   └── supabase/                        # Bundled Supabase client
 │   ├── favicon.ico                          # Favicon do aplicativo
-│   ├── index.html                           # Layout Desktop, Topbar, Modais e Abas 01 a 05
+│   ├── index.html                           # Layout Desktop, Topbar, Métricas Globais, Modais e Abas 01 a 05
 │   ├── main.js                              # Entry script
 │   ├── pip.html                             # Janela Flutuante PiP Always-on-Top para TV CRT
 │   ├── site.webmanifest                     # Manifesto web de metadados
@@ -107,11 +108,11 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 │   │   ├── mod_manager.rs                   # Varredura do filesystem, unzip assíncrono e Steam
 │   │   ├── tracker.rs                       # Leitura segura de telemetria local
 │   │   └── updater.rs                       # Downloader nativo em streaming e elevação UAC
-│   ├── Cargo.toml                           # Dependências e manifesto Rust (v2.2.5)
-│   └── tauri.conf.json                      # Configuração de janelas, alvos nsis/msi e bundle (v2.2.5)
+│   ├── Cargo.toml                           # Dependências e manifesto Rust (v2.2.6)
+│   └── tauri.conf.json                      # Configuração de janelas, alvos nsis/msi e bundle (v2.2.6)
 ├── download_data.js                         # Utilitário para download de mapas e vetores
-├── latest.json                              # Manifesto oficial de release remoto (v2.2.5)
-├── package.json                             # Scripts npm e dependências de frontend (v2.2.5)
+├── latest.json                              # Manifesto oficial de release remoto (v2.2.6)
+├── package.json                             # Scripts npm e dependências de frontend (v2.2.6)
 └── README.md                                # Apresentação do projeto
 ```
 
@@ -127,7 +128,13 @@ VICCS_PZHub/ (Desktop App Workspace Root)
 - `src/css/main.css`: Design System Tactical Liquid Glass com classes completas para a visualização tática de broadcasting e modais.
 
 ## Current Features Implemented
-1. **Motor de Transmissão Multimídia & Áudio Espacial 3D (v2.2.3 & v2.2.5):**
+1. **Telemetria de Downloads em Tempo Real & RPCs Atômicas (v2.2.6):**
+   - **Card DOWNLOADS GLOBAIS no Hub:** Indicador visual no `hero-metrics-strip` do Centro de Operações (Aba 01) com contagem verificada de downloads do software (`#hub-global-downloads-count`).
+   - **Contagem Atômica de Modpacks via RPC:** Substituição do `PATCH` bloqueado por RLS pela Stored Procedure `increment_modpack_download(target_pack_id)` com `SECURITY DEFINER`.
+   - **Sincronização WebSocket Realtime:** Canal `pzhub-global-downloads` no `app.js` assinando tabelas `app_analytics` e `modpacks` para updates zero-refresh.
+   - **Tabela `app_analytics`:** Registro centralizado de telemetria do software desktop (`id = 'pzhub_desktop'`, `total_downloads`).
+
+2. **Motor de Transmissão Multimídia & Áudio Espacial 3D (v2.2.3 & v2.2.5):**
    - **Aba 05 TRANSMISSÃO:** Nova interface tática integrada à navbar com badge de status do motor.
    - **Master Switch com Trava:** O toggle de ativação só é liberado se o mod `VICCS_Broadcasting` for detectado no computador do usuário.
    - **Modal de Boas-Vindas Tático:** Janela com orientações claras explicando que o motor roda em segundo plano e que o controle é 100% in-game.
@@ -139,28 +146,28 @@ VICCS_PZHub/ (Desktop App Workspace Root)
    - **Heartbeat TTL & Anti-Reprodução Fantasma:** Interrupção automática da música quando o jogo fecha ou o jogador desconecta do servidor, além de proteção contra reprodução indevida ao abrir o PZHub com o jogo fechado.
    - **Anti-Overlap de Canais Vanilla:** Silenciamento automático das transmissões vanilla em rádios e televisores durante a reprodução do mod, com restauração automática ao finalizar.
 
-2. **Overhaul de Blips Táticos GTA V & Enriquecimento de POIs (v2.2.2):**
+3. **Overhaul de Blips Táticos GTA V & Enriquecimento de POIs (v2.2.2):**
    - 20 ícones vetoriais SVG de alta resolução inspirados no FiveM / RAGE:MP.
    - Catalogação de 1.017 edificações em Knox County com inclusão da categoria `mechanic` (Blip 72 - LS Customs) para Fallas Lake, West Point, Muldraugh e Riverside.
    - Sistema de Level of Detail (LOD) em 3 camadas de zoom e checklist com badges de cores na sidebar.
 
-3. **Painel Social Global Estilo Riot Client & Chat Privado (v2.2.1):**
+4. **Painel Social Global Estilo Riot Client & Chat Privado (v2.2.1):**
    - Gaveta lateral retrátil onipresente (`#riot-social-drawer`) acessível via atalho `ESC` ou botão na topbar.
    - 3 abas: *Amigos* (com avatares reais, status Zomboid dinâmico e ordenação de online para o topo), *Chat* (recentes e não lidas) e *Solicitações*.
    - Janela flutuante de DM (Direct Message) pop-up no canto inferior direito com histórico isolado na tabela `direct_messages`.
    - Notificação acústica bi-tonal suave sintetizada via Web Audio API (F#5 -> C#6).
 
-4. **Auto-Updater Blindado & Execução de Patch (v2.2.1):**
+5. **Auto-Updater Blindado & Execução de Patch (v2.2.1):**
    - Validação binária por Magic Bytes (`MZ` / `OLE`), auto-correção dinâmica de extensão (`.exe` vs `.msi`), elevação UAC nativa no Windows e fallback dinâmico entre branches.
 
-5. **Hero Play Button & Injeção de RAM no Zomboid:**
+6. **Hero Play Button & Injeção de RAM no Zomboid:**
    - Botão de lançamento primário e injeção atômica de `-Xmx`/`-Xms` no `ProjectZomboid64.json`.
 
-6. **Motor de Mapa Tático 1:1 Knox County & Radar:**
+7. **Motor de Mapa Tático 1:1 Knox County & Radar:**
    - Projeção Zomboid 1:1 com 1.017 POIs mapeados, Blips GTA V em 20 categorias, LOD em 3 camadas e navegação GPS A*.
 
-7. **Gerenciador de Modpacks & Scanner Local:**
-   - Catálogo integrado ao Supabase com visualizações Grade ⊞ e Lista ☰.
+8. **Gerenciador de Modpacks & Scanner Local:**
+   - Catálogo integrado ao Supabase com visualizações Grade ⊞ e Lista ☰ e contagem atômica de downloads via RPC.
 
 ## Work-in-Progress & Known TODOs
 - [ ] Notificações nativas do Windows para novos eventos de áudio/vídeo transmitidos e mensagens de DM.

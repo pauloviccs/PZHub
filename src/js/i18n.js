@@ -56,11 +56,11 @@ export const translations = {
     "lang_select": "Idioma",
 
     // Tabs
-    "tab_hub": "01 CENTRO DE OPERAÇÕES",
-    "tab_modpacks": "02 MODPACKS",
-    "tab_local_mods": "03 MODS LOCAIS",
-    "tab_map": "04 MAPA & RADAR",
-    "tab_broadcasting": "05 TRANSMISSÃO",
+    "tab_hub": "CENTRO DE OPERAÇÕES",
+    "tab_modpacks": "MODPACKS",
+    "tab_local_mods": "MODS LOCAIS",
+    "tab_map": "MAPA & RADAR",
+    "tab_broadcasting": "TRANSMISSÃO",
 
     // View 1: Hub
     "hub_badge": "CENTRO DE COMANDO TÁTICO",
@@ -136,11 +136,11 @@ export const translations = {
     "lang_select": "Language",
 
     // Tabs
-    "tab_hub": "01 OPERATIONS HUB",
-    "tab_modpacks": "02 MODPACKS",
-    "tab_local_mods": "03 LOCAL MODS",
-    "tab_map": "04 MAP & RADAR",
-    "tab_broadcasting": "05 BROADCASTING",
+    "tab_hub": "OPERATIONS HUB",
+    "tab_modpacks": "MODPACKS",
+    "tab_local_mods": "LOCAL MODS",
+    "tab_map": "MAP & RADAR",
+    "tab_broadcasting": "BROADCASTING",
 
     // View 1: Hub
     "hub_badge": "TACTICAL COMMAND CENTER",
@@ -216,11 +216,11 @@ export const translations = {
     "lang_select": "Idioma",
 
     // Tabs
-    "tab_hub": "01 CENTRO DE OPERACIONES",
-    "tab_modpacks": "02 MODPACKS",
-    "tab_local_mods": "03 MODS LOCALES",
-    "tab_map": "04 MAPA Y RADAR",
-    "tab_broadcasting": "05 TRANSMISIÓN",
+    "tab_hub": "CENTRO DE OPERACIONES",
+    "tab_modpacks": "MODPACKS",
+    "tab_local_mods": "MODS LOCALES",
+    "tab_map": "MAPA Y RADAR",
+    "tab_broadcasting": "TRANSMISIÓN",
 
     // View 1: Hub
     "hub_badge": "CENTRO DE COMANDO TÁCTICO",

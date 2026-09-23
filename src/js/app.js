@@ -17,6 +17,7 @@ import { initAuth } from './auth.js';
 import { initSocialManager } from './social_manager.js';
 import { BroadcastingEngine } from './broadcasting_engine.js';
 import { supabase, isConfigured, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabaseClient.js';
+import { soundFx } from './sound_fx.js';
 
 class App {
   constructor() {
@@ -38,6 +39,7 @@ class App {
   async init() {
     // 0. Inicializa Tema (Dark / White Mode) e Internacionalização (i18n)
     this.initTheme();
+    this.initSoundToggle();
     this.setupLanguageSelector();
     this.populateMoreCategoriesSelect();
 
@@ -172,7 +174,9 @@ class App {
 
     // Navegação pelas abas superiores
     tabs.forEach(tab => {
+      tab.addEventListener('mouseenter', () => soundFx.playHover());
       tab.addEventListener('click', () => {
+        soundFx.playClick();
         const targetView = tab.dataset.view;
         if (targetView) this.switchView(targetView);
       });
@@ -180,18 +184,28 @@ class App {
 
     // Navegação pelos portais da Home / Hub
     portals.forEach(portal => {
+      portal.addEventListener('mouseenter', () => soundFx.playHover());
       portal.addEventListener('click', () => {
+        soundFx.playClick();
         const targetView = portal.dataset.targetView;
         if (targetView) this.switchView(targetView);
       });
     });
 
     if (brandBtn) {
-      brandBtn.addEventListener('click', () => this.switchView('view-hub'));
+      brandBtn.addEventListener('mouseenter', () => soundFx.playHover());
+      brandBtn.addEventListener('click', () => {
+        soundFx.playClick();
+        this.switchView('view-hub');
+      });
     }
 
     if (backToHubBtn) {
-      backToHubBtn.addEventListener('click', () => this.switchView('view-hub'));
+      backToHubBtn.addEventListener('mouseenter', () => soundFx.playHover());
+      backToHubBtn.addEventListener('click', () => {
+        soundFx.playClick();
+        this.switchView('view-hub');
+      });
     }
 
     if (globalAotBtn) {
@@ -229,6 +243,38 @@ class App {
         if (themeIcon) themeIcon.textContent = nextLight ? '🌙' : '☀️';
       });
     }
+  }
+
+  initSoundToggle() {
+    const soundToggleBtn = document.getElementById('btn-global-sound-toggle');
+    const iconOn = document.getElementById('topbar-sound-icon-on');
+    const iconOff = document.getElementById('topbar-sound-icon-off');
+
+    const updateSoundUI = (muted) => {
+      if (iconOn && iconOff) {
+        iconOn.style.display = muted ? 'none' : 'block';
+        iconOff.style.display = muted ? 'block' : 'none';
+      }
+      if (soundToggleBtn) {
+        soundToggleBtn.classList.toggle('muted', muted);
+        soundToggleBtn.title = muted
+          ? (i18n.currentLang === 'en' ? 'UI Sound Effects: Muted (Click to enable)' : (i18n.currentLang === 'es' ? 'Efectos de Sonido: Silenciados (Clic para activar)' : 'Efeitos Sonoros da UI: Silenciados (Clique para ativar)'))
+          : (i18n.currentLang === 'en' ? 'UI Sound Effects: Enabled (Click to mute)' : (i18n.currentLang === 'es' ? 'Efectos de Sonido: Activados (Clic para silenciar)' : 'Efeitos Sonoros da UI: Ativados (Clique para silenciar)'));
+      }
+    };
+
+    updateSoundUI(soundFx.isMuted());
+
+    if (soundToggleBtn) {
+      soundToggleBtn.addEventListener('click', () => {
+        const nextMuted = soundFx.toggleMute();
+        updateSoundUI(nextMuted);
+      });
+    }
+
+    window.addEventListener('pzhub-sound-mute-changed', (e) => {
+      updateSoundUI(e.detail.muted);
+    });
   }
 
   setupLanguageSelector() {
@@ -278,6 +324,9 @@ class App {
   }
 
   switchView(viewId) {
+    if (this.activeView !== viewId) {
+      soundFx.playSwitch();
+    }
     this.activeView = viewId;
 
     // Atualiza abas da navbar

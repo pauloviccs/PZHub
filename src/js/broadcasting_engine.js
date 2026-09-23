@@ -362,9 +362,22 @@ export class BroadcastingEngine {
       return;
     }
 
+    // Filtra apenas os dispositivos que possuem volume audível para este jogador local
+    // (evita que aparelhos do outro lado do mapa toquem mídia no PZHub com volume zerado)
+    const audibleDevices = activeDevices.filter(d => (typeof d.volume === 'number' ? d.volume : 0) > 0.001);
+
+    if (audibleDevices.length === 0) {
+      // Dispositivos existem no mapa ou servidor, mas nenhum está ao alcance audível do jogador local
+      if (this.currentPlayingDevice) {
+        this.stopCurrentMedia();
+      }
+      this.clearTelemetryUI();
+      return;
+    }
+
     // Seleciona o dispositivo mais audível (maior volume espacial)
-    activeDevices.sort((a, b) => (b.volume || 0) - (a.volume || 0));
-    const primeDev = activeDevices[0];
+    audibleDevices.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+    const primeDev = audibleDevices[0];
 
     // Se o dispositivo individual estiver pausado
     if (primeDev.isPaused === true) {
@@ -377,7 +390,7 @@ export class BroadcastingEngine {
     }
 
     this.handlePlayback(primeDev);
-    this.updateTelemetryUI(primeDev, activeDevices.length);
+    this.updateTelemetryUI(primeDev, audibleDevices.length);
   }
 
   parseYouTubeMedia(url) {
@@ -446,8 +459,8 @@ export class BroadcastingEngine {
     const mediaKey = playlistId ? `playlist_${playlistId}_${videoId || ''}` : `video_${videoId}`;
     const currentTimestamp = Date.now() / 1000;
     const startedAt = device.startedAt || currentTimestamp;
-    const offsetSeconds = Math.max(0, currentTimestamp - startedAt);
-    const targetVolume = Math.min(100, Math.max(0, Math.round((device.volume || 0.7) * 100)));
+    const devVol = (typeof device.volume === 'number') ? device.volume : 0.7;
+    const targetVolume = Math.min(100, Math.max(0, Math.round(devVol * 100)));
 
     // 1. Áudio em Segundo Plano
     if (this.ytPlayer && this.isYtReady) {

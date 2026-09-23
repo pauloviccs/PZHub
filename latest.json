@@ -1,8 +1,8 @@
 {
-  "version": "2.2.6",
-  "name": "PZHub Tactical Patch v2.2.6",
-  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.6/PZHub_2.2.6_x64-setup.exe",
-  "notes": "### PZHub Update 2.2.6 — Telemetria de Downloads Sincronizada em Tempo Real & RPCs Atômicas\n\n- **Telemetria de Downloads Sincronizada:** Contador global de downloads integrado ao Hub Desktop e sincronizado em tempo real com o Website via Supabase Realtime WebSocket.\n- **Instalação Atômica de Modpacks:** Resolução definitiva de restrições de RLS com Stored Procedure PostgreSQL `increment_modpack_download`, garantindo contagem precisa e instantânea de downloads para toda a comunidade.\n- **Indicador Visual no Hub:** Novo painel tático de métricas globais exibindo a contagem acumulada verificada de downloads do software.",
-  "pub_date": "2026-09-20T21:40:00Z",
+  "version": "2.2.7",
+  "name": "PZHub Tactical Patch v2.2.7",
+  "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.7/PZHub_2.2.7_x64-setup.exe",
+  "notes": "### PZHub Update 2.2.7 — Redesenho Modular da Navbar Tática & Motor de Áudio UI (Web Audio API)\n\n- **Dock Modular Expansível:** Substituição das abas estáticas compridas por boxes modulares minimalistas com ícones táticos de alta precisão que expandem horizontalmente com física elástica no hover.\n- **Motor de Efeitos Sonoros Tácteis:** Novo módulo `sound_fx.js` com síntese acústica aveludada em Web Audio API para hover e cliques de chave mecânica, sem latência e sem ruídos estridentes.\n- **Controle Global de Mute:** Novo botão de silenciamento rápido de sons na barra de utilitários superior com persistência local de preferências.\n- **Otimização de Proximidade Broadcasting:** Culling de dispositivos inaudíveis no motor multimídia, prevenindo vazamentos de áudio à distância.",
+  "pub_date": "2026-09-23T00:35:00Z",
   "mandatory": false
 }

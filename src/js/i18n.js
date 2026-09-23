@@ -120,6 +120,11 @@ export const translations = {
     "add_friend_nick": "Apelido (opcional)",
     "btn_save_friend": "+ ADICIONAR AMIGO",
 
+    // Preferências de Sistema
+    "pref_system_behavior": "Comportamento do Sistema & Janela",
+    "pref_minimize_tray_title": "Minimizar para a Bandeja ao fechar [X]",
+    "pref_minimize_tray_desc": "Ao fechar [X], mantém o PZHub rodando na bandeja (System Tray) para não interromper transmissões e radar.",
+
     // Modals & Feedback
     "modal_deploy_title": "SINCRONIZANDO MODPACK",
     "modal_btn_close": "CONCLUIR & FECHAR"
@@ -200,6 +205,11 @@ export const translations = {
     "add_friend_nick": "Nickname (optional)",
     "btn_save_friend": "+ ADD FRIEND",
 
+    // System Preferences
+    "pref_system_behavior": "System & Window Behavior",
+    "pref_minimize_tray_title": "Minimize to System Tray on close [X]",
+    "pref_minimize_tray_desc": "When closing [X], keeps PZHub running in the System Tray to avoid cutting off broadcasts and radar.",
+
     // Modals & Feedback
     "modal_deploy_title": "SYNCING MODPACK",
     "modal_btn_close": "FINISH & CLOSE"
@@ -279,6 +289,11 @@ export const translations = {
     "add_friend_placeholder": "Usuario de Zomboid (ej: Rick_Grimes)",
     "add_friend_nick": "Apodo (opcional)",
     "btn_save_friend": "+ AÑADIR AMIGO",
+
+    // Preferencias de Sistema
+    "pref_system_behavior": "Comportamiento del Sistema y Ventana",
+    "pref_minimize_tray_title": "Minimizar a la Bandeja al cerrar [X]",
+    "pref_minimize_tray_desc": "Al cerrar [X], mantiene PZHub ejecutándose en la bandeja (System Tray) para no interrumpir transmisiones y radar.",
 
     // Modals & Feedback
     "modal_deploy_title": "SINCRONIZANDO MODPACK",

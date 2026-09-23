@@ -231,10 +231,73 @@ fn get_app_version(app: tauri::AppHandle) -> String {
     app.package_info().version.to_string()
 }
 
+#[tauri::command]
+fn exit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            // Menu de contexto da bandeja do sistema
+            let open_item = tauri::menu::MenuItem::with_id(app, "open", "Abrir PZHub", true, None::<&str>)?;
+            let quit_item = tauri::menu::MenuItem::with_id(app, "quit", "Encerrar PZHub", true, None::<&str>)?;
+            let tray_menu = tauri::menu::Menu::with_items(app, &[&open_item, &quit_item])?;
+
+            if let Some(icon) = app.default_window_icon() {
+                let _ = tauri::tray::TrayIconBuilder::new()
+                    .icon(icon.clone())
+                    .tooltip("PZHub - Tactical Live Radar & Broadcasting")
+                    .menu(&tray_menu)
+                    .show_menu_on_left_click(false)
+                    .on_menu_event(|app: &tauri::AppHandle, event: tauri::menu::MenuEvent| {
+                        match event.id.as_ref() {
+                            "open" => {
+                                if let Some(window) = app.get_webview_window("main") {
+                                    let _ = window.show();
+                                    let _ = window.unminimize();
+                                    let _ = window.set_focus();
+                                }
+                            }
+                            "quit" => {
+                                app.exit(0);
+                            }
+                            _ => {}
+                        }
+                    })
+                    .on_tray_icon_event(|tray: &tauri::tray::TrayIcon, event: tauri::tray::TrayIconEvent| {
+                        if let tauri::tray::TrayIconEvent::Click {
+                            button: tauri::tray::MouseButton::Left,
+                            button_state: tauri::tray::MouseButtonState::Up,
+                            ..
+                        } = event
+                        {
+                            let app = tray.app_handle();
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.unminimize();
+                                let _ = window.set_focus();
+                            }
+                        }
+                    })
+                    .build(app);
+            }
+
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    let cfg = config::load_config();
+                    if cfg.minimize_to_tray {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_app_version,
             get_tile,
@@ -258,6 +321,7 @@ pub fn run() {
             set_mini_radar_mode,
             minimize_window,
             close_window,
+            exit_app,
             install_zomboid_mod,
             open_zomboid_mods_dir,
             download_and_run_installer,

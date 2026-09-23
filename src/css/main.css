@@ -6513,3 +6513,105 @@ body.theme-light .tarkov-progress-bar-bg {
   color: var(--accent-cyan, #00d2d3);
 }
 
+/* ==========================================================================
+   TACTICAL PREFERENCES & TOGGLE SWITCH (SYSTEM TRAY & APP BEHAVIOR)
+   ========================================================================== */
+.tactical-pref-box {
+  background: rgba(14, 20, 28, 0.7);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: border-color var(--transition-fast);
+}
+
+.tactical-pref-box:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tactical-pref-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tactical-pref-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.tactical-pref-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+
+.tactical-pref-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Tactical Switch */
+.tactical-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.tactical-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.tactical-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tactical-switch-slider::before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-muted);
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.tactical-switch input:checked + .tactical-switch-slider {
+  background-color: rgba(46, 204, 113, 0.2);
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.25);
+}
+
+.tactical-switch input:checked + .tactical-switch-slider::before {
+  transform: translateX(22px);
+  background-color: var(--accent-emerald);
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+}
+
+.tactical-switch input:focus-visible + .tactical-switch-slider {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+

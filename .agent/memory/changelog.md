@@ -1,5 +1,60 @@
 # Changelog
 
+## [2.2.9] - 2026-09-23 (Modo Sentinela: Minimizar para a Bandeja / System Tray & Chave Tática)
+
+### Adicionado
+- **Integração Nativa com Tauri v2 System Tray (`src-tauri/src/lib.rs`):**
+  - Interceptação de `WindowEvent::CloseRequested` na janela `main`, chamando `api.prevent_close()` e `window.hide()`.
+  - Ícone de notificação na bandeja do Windows com tooltip descritivo.
+  - Menu de contexto na bandeja com ações *"Abrir PZHub"* (show + unminimize + focus) e *"Encerrar PZHub"* (comando nativo `exit_app` / `app.exit(0)`).
+  - Restauração imediata da janela em 1 clique com botão esquerdo sobre o ícone.
+- **Disjuntor Tático de Configurações (`src/index.html` & `src/css/main.css`):**
+  - Novo card *"Comportamento do Sistema & Janela"* na aba `#tab-settings` com switch `#toggle-minimize-tray`.
+  - Padrão **ativado por default (`true`)**.
+  - Estilização milspec escura com transição de slider e brilho esmeralda neon.
+  - Efeito acústico mecânico ao comutar (`soundFx.playSwitch()`).
+- **Persistência Nativa de Preferências (`src-tauri/src/config.rs`):**
+  - Campo `pub minimize_to_tray: bool` com fallback padrão `true` na struct `UserConfig`, persistido no `config.json` via `set_user_config`.
+- **Acesso Rápido às Configurações:**
+  - Atalho *"Configurações"* adicionado ao menu dropdown de contexto do operador no topo direito.
+- **Internacionalização (i18n):**
+  - Chaves de tradução adicionadas em `src/js/i18n.js` para PT-BR, EN-US e ES-ES.
+- **Compilação de Release:**
+  - Gerados instaladores `PZHub_2.2.9_x64-setup.exe` (NSIS) e `PZHub_2.2.9_x64_en-US.msi`.
+
+## [2.2.8] - 2026-09-23 (Sincronia Perfeita: Desmutação Defensiva & Fim do Silêncio no Multiplayer)
+
+### Corrigido
+- **Fim do Silêncio no Player de YouTube (`src/js/broadcasting_engine.js`):**
+  - Chamada defensiva explícita a `this.ytPlayer.unMute()` quando o volume é positivo, contornando bloqueios de autoplay do Chromium/Tauri webview.
+  - Blindagem do cálculo de `startedAt` e `offsetSeconds` com `Number.isFinite()`, prevenindo busca (`seekTo`) em posições `NaN` ou não-finitas.
+- **Despertar do Contexto Web Audio 3D (`src/js/spatial_audio_engine.js`):**
+  - Chamada a `this.ensureContext()` dentro de `updateAcoustics()` para reativar o `AudioContext` suspenso no primeiro pacote de telemetria recebido do jogo.
+- **Paridade Multi-Target com Mod v1.2.3:**
+  - Sincronização automatizada com conferência MD5 idêntica entre diretórios de mods de cliente e servidor dedicado.
+
+## [2.2.7] - 2026-09-22 (O Cockpit Modular: Topbar Expansível & Áudio Tático de Interface)
+
+### Adicionado
+- **Dock de Navegação Tático Modular (`src/index.html` & `src/css/main.css`):**
+  - Substituição da barra superior de texto estático por caixas/ícones modulares expansíveis (`.tarkov-tab`).
+  - No hover, a box desliza suavemente revelando o índice numérico (`01` a `05`) e o nome da view com animação cúbica milspec.
+  - Realce verde esmeralda na aba `04 MAPA & RADAR`.
+- **Motor de Efeitos Sonoros Procedurais de Interface (`src/js/sound_fx.js`):**
+  - Síntese pura via Web Audio API (zero dependências de arquivos de áudio externos):
+    - *Hover metálico suave:* 1800Hz com decaimento orgânico de 45ms.
+    - *Click mecânico tático:* duplo transiente 800Hz/400Hz simulando interruptor militar.
+    - *Switch deslizante:* transição suave de comutação.
+- **Chave Master de Silenciamento na Topbar (`#btn-global-sound-toggle`):**
+  - Botão de volume discreto no topo direito com ícones dinâmicos on/off e persistência em `localStorage`.
+
+## [2.2.6] - 2026-09-20 (Telemetria Blindada: Downloads em Tempo Real & RPCs Atômicas)
+
+### Adicionado
+- **Stored Procedure com `SECURITY DEFINER`:** RPC `increment_modpack_download` contornando restrições de RLS no PostgreSQL do Supabase.
+- **Supabase Realtime WebSocket:** Replicação ao vivo de downloads no canal `pzhub-global-downloads`.
+- **Métrica Global no Hub:** Indicador numérico em tempo real no dashboard do PZHub.
+
 ## [2.2.2] - 2026-09-13 (Overhaul de Blips Táticos GTA V, Enriquecimento de POIs & Sistema de LOD)
 
 ### Adicionado

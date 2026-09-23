@@ -224,6 +224,18 @@ class App {
         }
       });
     }
+
+    const menuOptSettings = document.getElementById('menu-opt-settings');
+    if (menuOptSettings) {
+      menuOptSettings.addEventListener('click', () => {
+        const userContextMenu = document.getElementById('user-context-menu');
+        if (userContextMenu) userContextMenu.classList.remove('open');
+        this.switchView('view-map');
+        const settingsTabBtn = document.querySelector('[data-tab="tab-settings"]');
+        if (settingsTabBtn) settingsTabBtn.click();
+        soundFx.playClick();
+      });
+    }
   }
 
   initTheme() {
@@ -801,6 +813,43 @@ class App {
         const val = parseFloat(e.target.value);
         opacityVal.textContent = `${Math.round(val * 100)}%`;
         document.body.style.opacity = `${val}`;
+      });
+    }
+
+    // Configuração de Minimizar para a Tray ao fechar [X]
+    const toggleMinimizeTray = document.getElementById('toggle-minimize-tray');
+    if (toggleMinimizeTray) {
+      if (this.isTauri) {
+        window.__TAURI__.core.invoke('get_user_config').then((cfg) => {
+          if (cfg && typeof cfg.minimize_to_tray === 'boolean') {
+            toggleMinimizeTray.checked = cfg.minimize_to_tray;
+          } else {
+            toggleMinimizeTray.checked = true;
+          }
+        }).catch(() => {
+          toggleMinimizeTray.checked = true;
+        });
+      } else {
+        const saved = localStorage.getItem('pzhub_minimize_to_tray');
+        toggleMinimizeTray.checked = saved !== 'false';
+      }
+
+      toggleMinimizeTray.addEventListener('mouseenter', () => soundFx.playHover());
+
+      toggleMinimizeTray.addEventListener('change', async (e) => {
+        const isChecked = e.target.checked;
+        localStorage.setItem('pzhub_minimize_to_tray', isChecked ? 'true' : 'false');
+        soundFx.playSwitch();
+
+        if (this.isTauri) {
+          try {
+            const cfg = await window.__TAURI__.core.invoke('get_user_config');
+            cfg.minimize_to_tray = isChecked;
+            await window.__TAURI__.core.invoke('set_user_config', { config: cfg });
+          } catch (err) {
+            console.error('Erro ao salvar preferência de bandeja:', err);
+          }
+        }
       });
     }
   }

@@ -4,17 +4,18 @@
 PZHub Desktop (Tactical Live Radar, Modpack Manager & Operations Suite)
 
 ## Description
-Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar, modpacks e motor de reprodução multimídia para a comunidade de **Project Zomboid (Build 42 & Build 41)**. Na **v2.2.6**, o sistema ganhou telemetria de downloads em tempo real com RPCs atômicas PostgreSQL `SECURITY DEFINER` e sincronização via Supabase Realtime WebSocket. O ecossistema integra:
+Aplicação desktop nativa para Windows desenvolvida em **Tauri v2 + Rust** e **Vanilla JavaScript / Leaflet.js**, projetada como a central tática de inteligência, radar, modpacks e motor de reprodução multimídia para a comunidade de **Project Zomboid (Build 42 & Build 41)**. Na **v2.2.9**, o sistema ganhou integração nativa completa com a **Bandeja do Sistema (Windows System Tray)** com persistência em `UserConfig`, menu de contexto de bandeja ("Abrir PZHub" e "Encerrar PZHub") e chave comutadora tática (toggle switch) na aba de configurações para minimizar a janela ao clicar no [X], garantindo que transmissões em andamento de áudio 3D e radar continuem ininterruptas em segundo plano. O ecossistema integra:
+- **Minimizar para a Bandeja (System Tray - v2.2.9):** Interceptação do evento `WindowEvent::CloseRequested` da janela nativa do Windows [X], mantendo o PZHub vivo em background com restauração em 1 clique no ícone da bandeja e controle via toggle switch padrão ativo (`minimize_to_tray = true`);
 - Motor de mapa isométrico 1:1 de Knox County com cache de tiles em disco gerenciado pelo Rust;
 - Motor de Blips táticos vetoriais SVG estilo GTA V (FiveM / RAGE:MP) com 20 categorias e sistema de LOD em 3 camadas;
 - Malha de 1.017 POIs enriquecidos (incluindo oficinas mecânicas de Fallas Lake, West Point, Muldraugh e Riverside);
 - Telemetria e radar ao vivo via mini-mod Lua e navegação GPS A* por malha viária oficial de 1.098 ruas;
-- Catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`), descompactação assíncrona de `.zip` e **contagem atômica de downloads via RPC `increment_modpack_download` com `SECURITY DEFINER`**;
+- Catálogo e instalador de modpacks com integração ao Steam Workshop (`steam://`), descompactação assíncrona de `.zip` e contagem atômica de downloads via RPC `increment_modpack_download` com `SECURITY DEFINER`;
 - Scanner local de mods com alternância Grade ⊞ / Lista ☰;
 - Autenticação integrada com Supabase Auth/PostgreSQL e painel social global estilo Riot Client (gaveta lateral retrátil, lista de amigos com detecção de presença dinâmica, DM pop-up com notificação acústica tática sintetizada e tabela isolada `direct_messages`);
 - Botão hero de lançamento na Steam com injeção de parâmetros JVM de memória RAM no `ProjectZomboid64.json`;
 - Sistema de auto-atualização blindado com validação binária por Magic Bytes (`MZ` / `OLE`) e elevação UAC nativa no Windows;
-- **Subsistema de Transmissão Multimídia & TV PiP (Protocolo VICCS Broadcasting - v2.2.3 / v2.2.5):**
+- **Subsistema de Transmissão Multimídia & TV PiP (Protocolo VICCS Broadcasting - v2.2.3 / v2.2.5 / v2.2.8):**
   - **Motor de Áudio Espacial 3D & DSP Acústico (`src/js/spatial_audio_engine.js`):** Web Audio API com HRTF/EqualPower, respostas de impulso (IR) procedurais de ambientes, barramentos de reverberação duplos com crossfade suave entre cômodos, atenuação por oclusão e compressor/limitador master para múltiplos rádios.
   - **Som Automotivo Sincronizado para Veículos:** Rastreamento espacial e acompanhamento de movimento em tempo real para qualquer carro no jogo com som direto de cabine para passageiros.
   - **Janela Flutuante PiP Always-on-Top (`src/pip.html`):** Moldura estilo monitor CRT dos anos 90, scanlines analógicas e arrasto livre (`data-tauri-drag-region`) para televisores in-game.

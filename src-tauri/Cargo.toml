@@ -1,11 +1,11 @@
 [package]
 name = "tauri-app"
-version = "2.2.7"
+version = "2.2.9"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# See more keys and点的definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary
@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

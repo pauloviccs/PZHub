@@ -257,8 +257,9 @@ export class SpatialAudioEngine {
    * Atualiza a acústica do emissor a partir da telemetria v2 vinda do Zomboid
    */
   updateAcoustics(deviceData, listenerData) {
-    if (!this.audioCtx || !deviceData) return;
-    const ctx = this.audioCtx;
+    if (!deviceData) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
     const channel = this.getOrCreateEmitter(deviceData.deviceId);
 

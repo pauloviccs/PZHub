@@ -41,6 +41,8 @@ pub struct UserConfig {
     pub active_view: String, // "hub", "modpacks", "local_mods", "map"
     #[serde(default = "default_allocated_ram")]
     pub allocated_ram_gb: u32,
+    #[serde(default = "default_minimize_to_tray")]
+    pub minimize_to_tray: bool,
 }
 
 fn default_active_view() -> String {
@@ -49,6 +51,10 @@ fn default_active_view() -> String {
 
 fn default_allocated_ram() -> u32 {
     8
+}
+
+fn default_minimize_to_tray() -> bool {
+    true
 }
 
 impl Default for UserConfig {
@@ -67,6 +73,7 @@ impl Default for UserConfig {
             custom_steam_path: None,
             active_view: "hub".to_string(),
             allocated_ram_gb: 8,
+            minimize_to_tray: true,
         }
     }
 }

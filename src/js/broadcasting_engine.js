@@ -417,6 +417,14 @@ export class BroadcastingEngine {
 
   setSmoothVolume(targetVolume) {
     if (!this.ytPlayer || !this.isYtReady) return;
+
+    // Se o player estiver mutado e tivermos volume positivo, desmuta
+    try {
+      if (this.ytPlayer.isMuted && this.ytPlayer.isMuted() && targetVolume > 0) {
+        this.ytPlayer.unMute();
+      }
+    } catch (_) {}
+
     if (this.volumeTransitionTimer) {
       clearInterval(this.volumeTransitionTimer);
       this.volumeTransitionTimer = null;
@@ -458,7 +466,11 @@ export class BroadcastingEngine {
 
     const mediaKey = playlistId ? `playlist_${playlistId}_${videoId || ''}` : `video_${videoId}`;
     const currentTimestamp = Date.now() / 1000;
-    const startedAt = device.startedAt || currentTimestamp;
+    const startedAt = (typeof device.startedAt === 'number') ? device.startedAt : currentTimestamp;
+    let offsetSeconds = Math.max(0, currentTimestamp - startedAt);
+    if (!Number.isFinite(offsetSeconds) || offsetSeconds < 0) {
+      offsetSeconds = 0;
+    }
     const devVol = (typeof device.volume === 'number') ? device.volume : 0.7;
     const targetVolume = Math.min(100, Math.max(0, Math.round(devVol * 100)));
 

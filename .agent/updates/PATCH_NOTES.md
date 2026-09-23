@@ -5,6 +5,65 @@
 
 ---
 
+## 🛰️ Atualização 2.2.9 — "Modo Sentinela: Minimizar para a Bandeja (System Tray) & Chave Tática"
+*Data da Transmissão: 23 de Setembro de 2026*
+
+### 🎙️ Palavra dos Devs
+> *Quem nunca estava no meio de um tiroteio ou fuga desesperada de zumbis em Louisville, foi fechar uma janelinha no [X] e acidentalmente fechou o PZHub inteiro, cortando o som da fita cassete no rádio do carro e desligando o radar do esquadrão?* 🤦‍♂️📻🚗🧟‍♂️  
+> O botão `[X]` da barra do Windows tradicionalmente é uma guilhotina: apertou, o processo morre. Mas o **PZHub não é apenas uma interface gráfica comum; ele é o motor acústico e de telemetria** que mantém o mod de transmissão e os rádios funcionando dentro do Project Zomboid.  
+> Na **Versão 2.2.9**, nós ensinamos o PZHub a **"se esconder no bolso"**!  
+> Implementamos integração nativa de baixo nível com o **Windows System Tray (Área de Notificação do Windows)** via Tauri v2 e Rust. Agora, ao clicar no botão fechar `[X]`, a janela gráfica simplesmente sai de cena (`window.hide()`), enquanto o motor continua 100% ativo em segundo plano mantendo suas músicas, transmissões de rádio e TV sem interrupções.  
+> E se você quiser restaurar a tela? Basta **um único clique com o botão esquerdo** no ícone da bandeja. Quer sair de verdade? Clique com o botão direito e selecione *"Encerrar PZHub"*. Tudo isso controlado por um interruptor tático disjuntor na tela de configurações, que já vem ativado por padrão!
+
+### 🛡️ Destaques da Versão 2.2.9
+- **Hook no Ciclo de Vida do Windows (`src-tauri/src/lib.rs`):** Interceptação direta de `WindowEvent::CloseRequested` com `api.prevent_close()` e `window.hide()`.
+- **Restauração em 1 Clique:** Clique com botão esquerdo no ícone da bandeja traz a janela instantaneamente para foco (`window.show() + window.unminimize() + window.set_focus()`).
+- **Tray Menu Nativo:** Clique com botão direito com opções *"Abrir PZHub"* e *"Encerrar PZHub"* (`app.exit(0)`).
+- **Disjuntor Tático nas Configurações (`#tab-settings`):** Toggle switch comutador milspec padrão ativo (`checked = true`), com som mecânico e persistência em `UserConfig` (`src-tauri/src/config.rs`).
+- **Acesso Rápido no Perfil:** Botão *"Configurações"* integrado diretamente ao menu dropdown do operador no topo direito.
+- **Suporte Multilíngue (i18n):** Tags `data-i18n` em Português, Inglês e Espanhol.
+- **Binários de Release Oficial:** Gerados `PZHub_2.2.9_x64-setup.exe` (NSIS) e `PZHub_2.2.9_x64_en-US.msi`.
+
+---
+
+## 📻 Atualização 2.2.8 — "Sincronia Perfeita: O Fim do Silêncio no Multiplayer"
+*Data da Transmissão: 23 de Setembro de 2026*
+
+### 🎙️ Palavra dos Devs
+> *Você entra no servidor dedicado com seus amigos, coloca uma fita cassete clássica para tocar no rádio da sala... seu amigo do outro lado da floresta avisa no rádio que está ouvindo, mas quem está na frente do aparelho fica num silêncio absoluto?* 📻🤐🔇  
+> Na **Atualização 2.2.8**, nós reescrevemos a rotina de despacho de áudio: forçamos a desmutação defensiva ativa (`unMute()`), blindamos o cálculo do relógio de sincronização para garantir que todo o esquadrão ouça exatamente a mesma fração de segundo da música, e conectamos o despertar automático do contexto de áudio 3D!
+
+### 🛡️ Destaques da Versão 2.2.8
+- **Extermínio do Silêncio no Player (`src/js/broadcasting_engine.js`):** Desmutação defensiva forçada (`unMute()`) se o player YouTube estiver mutado pelo navegador com volume positivo.
+- **Relógio de Sincronia Preciso (`offsetSeconds`):** Cálculo resiliente `Math.max(0, currentTimestamp - startedAt)` com trava anti-`NaN`.
+- **Despertador do Contexto Espacial 3D (`src/js/spatial_audio_engine.js`):** Rotina `ensureContext()` acionada dinamicamente no primeiro evento de áudio vindo do Zomboid.
+- **Paridade Multi-Target com Mod v1.2.3:** Deploy automatizado com conferência MD5 idêntica para client e server do Project Zomboid.
+
+---
+
+## 🎨 Atualização 2.2.7 — "O Cockpit Modular: Topbar Expansível & Áudio Tático de Interface"
+*Data da Transmissão: 22 de Setembro de 2026*
+
+### 🎙️ Palavra dos Devs
+> *Inspirados nas interfaces de alta tecnologia militar (Escape from Tarkov e cockpits de simulação), criamos as Boxes de Ícones Modulares Expansíveis na barra superior e efeitos sonoros procedurais para cada interação.* 🗂️🎛️  
+
+### 🛡️ Destaques da Versão 2.2.7
+- **Dock de Abas Dinâmico (`.tarkov-tab`):** Boxes minimalistas que se expandem suavemente no hover revelando o índice numérico (`01` a `05`) e o nome da view.
+- **Motor de Áudio Tático Procedural (`src/js/sound_fx.js`):** Síntese Web Audio API nativa com sons de hover metálico, click mecânico e switch.
+- **Chave Master de Mute na Topbar (`#btn-global-sound-toggle`):** Controle rápido com persistência no `localStorage`.
+
+---
+
+## 📡 Atualização 2.2.6 — "Telemetria Blindada: Contadores de Downloads em Tempo Real & RPCs Atômicas"
+*Data da Transmissão: 20 de Setembro de 2026*
+
+### 🛡️ Destaques da Versão 2.2.6
+- **RPC Atômica `increment_modpack_download`:** Bypass de restrições de RLS no PostgreSQL do Supabase via `SECURITY DEFINER`.
+- **Supabase Realtime WebSocket:** Replicação instantânea de novos downloads em tempo real no canal `pzhub-global-downloads`.
+- **Card de Downloads no Hub:** Faixa operacional com indicadores ao vivo no desktop.
+
+---
+
 ## 📻 Atualização 2.2.3 — "Frequência Estendida: O Motor de Transmissão Multimídia & TV PiP dos Anos 90"
 *Data da Transmissão: 20 de Setembro de 2026*
 

@@ -1,8 +1,8 @@
 {
-  "version": "2.2.7",
-  "name": "PZHub Tactical Patch v2.2.7",
+  "version": "2.2.9",
+  "name": "PZHub Tactical Patch v2.2.9",
   "url": "https://github.com/pauloviccs/PZHub/releases/download/2.2.9/PZHub_2.2.9_x64-setup.exe",
-  "notes": "### PZHub Update 2.2.7 — Redesenho Modular da Navbar Tática & Motor de Áudio UI (Web Audio API)\n\n- **Dock Modular Expansível:** Substituição das abas estáticas compridas por boxes modulares minimalistas com ícones táticos de alta precisão que expandem horizontalmente com física elástica no hover.\n- **Motor de Efeitos Sonoros Tácteis:** Novo módulo `sound_fx.js` com síntese acústica aveludada em Web Audio API para hover e cliques de chave mecânica, sem latência e sem ruídos estridentes.\n- **Controle Global de Mute:** Novo botão de silenciamento rápido de sons na barra de utilitários superior com persistência local de preferências.\n- **Otimização de Proximidade Broadcasting:** Culling de dispositivos inaudíveis no motor multimídia, prevenindo vazamentos de áudio à distância.",
-  "pub_date": "2026-09-23T00:35:00Z",
+  "notes": "### PZHub Update 2.2.9 — Modo Sentinela: Minimizar para a Bandeja (System Tray) & Chave Tática\n\n- **Minimizar para a Bandeja:** O botão [X] agora oculta a janela na Área de Notificação do Windows, mantendo o áudio 3D e o radar operando em segundo plano sem interrupções.\n- **Menu de Contexto Milspec:** Clique com o botão direito no ícone da bandeja para Abrir ou Encerrar o PZHub; restauração imediata com 1 clique no botão esquerdo.\n- **Chave Tática nas Configurações:** Novo switch `#toggle-minimize-tray` ativo por padrão, com persistência nativa em `UserConfig` no `config.json`.\n- **Desmutação Defensiva & Sincronia Multiplayer:** Blindagem do cálculo de `startedAt` e desmutação automática de transmissões no player do YouTube.",
+  "pub_date": "2026-09-23T22:15:00Z",
   "mandatory": false
 }
